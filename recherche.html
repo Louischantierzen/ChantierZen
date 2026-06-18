@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChantierZen — Rechercher un artisan</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #FDFAF6; color: #1A2E1A; }
+
+  /* NAV */
+  nav {
+    background: #fff;
+    border-bottom: 2px solid #E5E0D8;
+    padding: 0 3rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .logo { font-size: 24px; font-weight: 800; color: #1E8449; letter-spacing: -0.5px; cursor: pointer; }
+  .logo span { color: #D5A55A; }
+  .nav-links { display: flex; gap: 0.5rem; list-style: none; justify-content: center; }
+  .nav-links a { color: #4B5563; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; padding: 7px 14px; border-radius: 8px; transition: all 0.2s; white-space: nowrap; }
+  .nav-links a:hover, .nav-links a.active { color: #1E8449; background: #E9F7EF; }
+  .nav-btns { display: flex; gap: 0.75rem; align-items: center; }
+  .btn-outline { background: transparent; color: #1E8449; border: 2px solid #1E8449; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: #1E8449; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #27AE60; }
+
+  /* LANG SELECTOR */
+  .lang-selector { position: relative; }
+  .lang-btn { background: linear-gradient(135deg, #E9F7EF, #fff); border: 1.5px solid #1E8449; border-radius: 20px; padding: 7px 14px; font-size: 14px; font-weight: 700; cursor: pointer; color: #1E8449; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(30,132,73,0.12); }
+  .lang-btn img { width: 20px; height: 14px; border-radius: 3px; object-fit: cover; }
+  .lang-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1.5px solid #E5E0D8; border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.12); overflow: hidden; min-width: 180px; z-index: 200; padding: 6px; }
+  .lang-dropdown.open { display: block; }
+  .lang-option { padding: 9px 12px; font-size: 14px; cursor: pointer; color: #1A2E1A; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .lang-option img { width: 22px; height: 15px; border-radius: 3px; }
+  .lang-option:hover { background: #E9F7EF; color: #1E8449; }
+  .lang-option.active { background: #E9F7EF; color: #1E8449; font-weight: 700; }
+
+  /* SEARCH HEADER */
+  .search-header {
+    background: linear-gradient(135deg, #1E8449 0%, #27AE60 100%);
+    padding: 2rem 3rem;
+  }
+  .search-bar {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .search-bar select, .search-bar input {
+    flex: 1;
+    border: 1.5px solid #E5E0D8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #1A2E1A;
+    background: #FDFAF6;
+    min-width: 140px;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-bar select:focus, .search-bar input:focus { border-color: #1E8449; }
+  .search-bar button { background: #1E8449; color: #fff; border: none; border-radius: 8px; padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .search-bar button:hover { background: #27AE60; }
+  .search-divider { width: 1px; height: 32px; background: #E5E0D8; }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
+
+  /* FILTERS SIDEBAR */
+  .filters {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E5E0D8;
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 90px;
+  }
+  .filters-title { font-size: 16px; font-weight: 800; margin-bottom: 1.25rem; color: #1A2E1A; display: flex; justify-content: space-between; align-items: center; }
+  .filters-reset { font-size: 13px; color: #1E8449; cursor: pointer; font-weight: 500; }
+  .filter-section { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #F3F4F6; }
+  .filter-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .filter-label { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .filter-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .filter-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #4B5563; padding: 4px 0; }
+  .filter-option input[type="checkbox"] { accent-color: #1E8449; width: 15px; height: 15px; cursor: pointer; }
+  .filter-option:hover { color: #1E8449; }
+  .filter-count { margin-left: auto; background: #F3F4F6; color: #6B7280; font-size: 12px; border-radius: 10px; padding: 2px 7px; }
+
+  /* RATING FILTER */
+  .rating-filter { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rating-opt { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #4B5563; padding: 4px 0; }
+  .rating-opt input { accent-color: #1E8449; }
+  .stars-sm { color: #D5A55A; font-size: 13px; }
+
+  /* RADIUS SLIDER */
+  .radius-slider { width: 100%; accent-color: #1E8449; margin: 0.5rem 0; }
+  .radius-label { display: flex; justify-content: space-between; font-size: 13px; color: #6B7280; }
+
+  /* RESULTS */
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem; }
+  .results-count { font-size: 15px; color: #6B7280; }
+  .results-count strong { color: #1A2E1A; }
+  .sort-select { border: 1.5px solid #E5E0D8; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: #1A2E1A; background: #fff; outline: none; cursor: pointer; font-family: inherit; }
+
+  /* ARTISAN CARDS */
+  .artisan-list { display: flex; flex-direction: column; gap: 1.25rem; }
+  .artisan-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E5E0D8;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.25rem;
+    align-items: start;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  .artisan-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #1E8449; }
+  .artisan-avatar {
+    width: 72px; height: 72px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .artisan-avatar .verified {
+    position: absolute; bottom: -4px; right: -4px;
+    background: #D5A55A; color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    border: 2px solid #fff;
+  }
+  .artisan-info { min-width: 0; }
+  .artisan-name { font-size: 18px; font-weight: 800; margin-bottom: 3px; color: #1A2E1A; }
+  .artisan-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+  .artisan-metier { background: #E9F7EF; color: #1E8449; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 3px 10px; }
+  .artisan-dist { font-size: 13px; color: #6B7280; display: flex; align-items: center; gap: 4px; }
+  .artisan-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 0.6rem; }
+  .stars { color: #D5A55A; font-size: 15px; }
+  .rating-num { font-size: 15px; font-weight: 700; color: #1A2E1A; }
+  .rating-count { font-size: 13px; color: #6B7280; }
+  .artisan-desc { font-size: 14px; color: #6B7280; line-height: 1.6; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .artisan-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .artisan-tag { background: #F3F4F6; color: #4B5563; font-size: 12px; border-radius: 6px; padding: 3px 8px; }
+  .artisan-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; flex-shrink: 0; }
+  .btn-contact { background: #1E8449; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn-contact:hover { background: #27AE60; }
+  .btn-view { background: transparent; color: #1E8449; border: 1.5px solid #1E8449; border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn-view:hover { background: #E9F7EF; }
+  .artisan-price { font-size: 13px; color: #6B7280; text-align: right; white-space: nowrap; }
+  .artisan-price strong { color: #1A2E1A; font-size: 15px; }
+
+  /* BADGES — 3 niveaux */
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 10px; white-space: nowrap; }
+
+  /* Niveau 1 — Inscrit (bleu discret) */
+  .badge-inscrit { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+  /* Niveau 2 — Vérifié (vert) */
+  .badge-verifie { background: #E9F7EF; color: #1E8449; border: 1px solid #6EE7A0; }
+
+  /* Niveau 3 — Expert Validé (or premium) */
+  .badge-expert {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    color: #92400E;
+    border: 1px solid #F59E0B;
+    box-shadow: 0 2px 6px rgba(245,158,11,0.25);
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+
+  /* Tooltip badge */
+  .badge-wrap { position: relative; display: inline-flex; }
+  .badge-wrap:hover .badge-tooltip { display: block; }
+  .badge-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1A2E1A;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 12px;
+    white-space: nowrap;
+    z-index: 50;
+    line-height: 1.5;
+    text-align: center;
+    min-width: 200px;
+  }
+  .badge-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1A2E1A;
+  }
+
+  /* INDIVIDUAL BADGE */
+  .individual-flag { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+  .page-btn { width: 38px; height: 38px; border-radius: 8px; border: 1.5px solid #E5E0D8; background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4B5563; transition: all 0.2s; }
+  .page-btn:hover { border-color: #1E8449; color: #1E8449; }
+  .page-btn.active { background: #1E8449; color: #fff; border-color: #1E8449; }
+
+  /* NO RESULTS */
+  .no-results { text-align: center; padding: 4rem 2rem; color: #6B7280; }
+  .no-results .emoji { font-size: 48px; margin-bottom: 1rem; }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .filters { position: static; }
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .search-header { padding: 1.5rem 1rem; }
+    .artisan-card { grid-template-columns: auto 1fr; }
+    .artisan-actions { flex-direction: row; grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" style="text-decoration:none"><div class="logo">Chantier<span>Zen</span></div></a>
+  <ul class="nav-links">
+    <li><a href="/recherche" class="active">Artisans</a></li>
+    <li><a href="/gestion">Gestion de chantier</a></li>
+    <li><a href="/#how-section">Comment ça marche</a></li>
+  </ul>
+  <div class="nav-btns">
+    <div class="lang-selector">
+      <button class="lang-btn" onclick="toggleLang()">
+        <img src="https://flagcdn.com/w20/be.png" alt="FR" id="current-flag">
+        <span id="current-lang">FR</span> ▾
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option active" onclick="setLang('FR', 'be')">
+          <img src="https://flagcdn.com/w20/be.png" alt="FR"> Français <span style="margin-left:auto">✓</span>
+        </div>
+        <div class="lang-option" onclick="setLang('NL', 'nl')">
+          <img src="https://flagcdn.com/w20/nl.png" alt="NL"> Nederlands
+        </div>
+        <div class="lang-option" onclick="setLang('DE', 'de')">
+          <img src="https://flagcdn.com/w20/de.png" alt="DE"> Deutsch
+        </div>
+        <div class="lang-option" onclick="setLang('EN', 'gb')">
+          <img src="https://flagcdn.com/w20/gb.png" alt="EN"> English
+        </div>
+      </div>
+    </div>
+    <button class="btn-outline" id="nav-login-btn" onclick="showLoginPrompt()">Connexion</button>
+    <button class="btn-primary" id="nav-logout-btn" style="display:none;background:#EF4444;border-color:#EF4444" onclick="toggleLogin()">Se déconnecter</button>
+    <button class="btn-primary" onclick="showLoginPrompt()">Inscription</button>
+  </div>
+</nav>
+
+<!-- LOGIN PROMPT MODAL -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;" id="login-prompt" onclick="if(event.target===this)closeLoginPrompt()">
+  <div style="background:#fff;border-radius:20px;padding:2.5rem;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:0.5rem;">Connectez-vous gratuitement</div>
+    <div style="font-size:14px;color:#6B7280;margin-bottom:1.5rem;line-height:1.6;">Pour voir les noms complets des artisans et les contacter via notre messagerie sécurisée, créez un compte gratuit.</div>
+    <div style="background:#E9F7EF;border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left;">
+      <div style="font-size:13px;color:#1A2E1A;display:flex;flex-direction:column;gap:6px;">
+        <div>✅ Nom complet des artisans débloqué</div>
+        <div>✅ Messagerie sécurisée incluse</div>
+        <div>✅ Suivi de vos chantiers</div>
+        <div>✅ 100% gratuit pour les particuliers</div>
+      </div>
+    </div>
+    <button onclick="loginFromPrompt()" style="width:100%;background:#1E8449;color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:0.75rem;">Créer mon compte gratuit →</button>
+    <button onclick="loginFromPrompt()" style="width:100%;background:transparent;color:#1E8449;border:2px solid #1E8449;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:1rem;">J'ai déjà un compte — Me connecter</button>
+    <div style="font-size:12px;color:#9CA3AF;cursor:pointer;" onclick="closeLoginPrompt()">Continuer sans compte (noms masqués)</div>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div id="login-banner" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1A2E1A;color:#fff;border-radius:12px;padding:1rem 1.5rem;font-size:14px;font-weight:600;z-index:400;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;">
+  <span id="banner-msg"></span>
+</div>
+
+<style>
+  #login-prompt { display: none; }
+  #login-prompt.open { display: flex !important; }
+  #login-banner.show { display: block !important; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+</style>
+
+<!-- SEARCH HEADER -->
+<div class="search-header">
+  <div class="search-bar">
+    <select id="metier-select" onchange="filterResults()">
+      <option value="">Tous les métiers</option>
+      <option value="Électricité">⚡ Électricité</option>
+      <option value="Plomberie">🔧 Plomberie</option>
+      <option value="Peinture">🖌️ Peinture</option>
+      <option value="Toiture">🏠 Toiture</option>
+      <option value="Carrelage">🪟 Carrelage</option>
+      <option value="Menuiserie">🪚 Menuiserie</option>
+      <option value="Maçonnerie">🧱 Maçonnerie</option>
+      <option value="Isolation">🌡️ Isolation</option>
+      <option value="Chauffage">🔥 Chauffage</option>
+      <option value="Jardinage">🌿 Jardinage</option>
+    </select>
+    <div class="search-divider"></div>
+    <input type="text" id="city-input" placeholder="📍 Votre ville ou code postal..." oninput="filterResults()" style="flex:2">
+    <button onclick="filterResults()">Rechercher</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR FILTERS -->
+  <aside class="filters">
+    <div class="filters-title">
+      Filtres
+      <span class="filters-reset" onclick="resetFilters()">Réinitialiser</span>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Note minimale</div>
+      <div class="rating-filter">
+        <label class="rating-opt"><input type="radio" name="rating" value="0" checked onchange="filterResults()"> Toutes les notes</label>
+        <label class="rating-opt"><input type="radio" name="rating" value="3" onchange="filterResults()"> <span class="stars-sm">★★★</span> et plus</label>
+        <label class="rating-opt"><input type="radio" name="rating" value="4" onchange="filterResults()"> <span class="stars-sm">★★★★</span> et plus</label>
+        <label class="rating-opt"><input type="radio" name="rating" value="4.5" onchange="filterResults()"> <span class="stars-sm">★★★★★</span> 4.5+</label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Disponibilité</div>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> Disponible maintenant <span class="filter-count">8</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> Cette semaine <span class="filter-count">15</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> Ce mois <span class="filter-count">24</span></label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Niveau de badge</div>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> <span class="badge badge-expert" style="font-size:10px;padding:2px 8px;">🏆 Expert Validé</span> <span class="filter-count">3</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> <span class="badge badge-verifie" style="font-size:10px;padding:2px 8px;">✅ Vérifié</span> <span class="filter-count">2</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> <span class="badge badge-inscrit" style="font-size:10px;padding:2px 8px;">🔵 Inscrit</span> <span class="filter-count">1</span></label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Langues parlées</div>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> 🇫🇷 Français <span class="filter-count">30</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> 🇳🇱 Néerlandais <span class="filter-count">14</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> 🇩🇪 Allemand <span class="filter-count">6</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterResults()"> 🇬🇧 Anglais <span class="filter-count">9</span></label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RESULTS -->
+  <main>
+    <div class="results-header">
+      <div class="results-count">
+        <strong id="results-count">6</strong> artisans trouvés près de <strong>Mons</strong>
+      </div>
+      <select class="sort-select" onchange="sortResults(this.value)">
+        <option value="distance">Trier : Plus proche</option>
+        <option value="rating">Trier : Mieux noté</option>
+        <option value="reviews">Trier : Plus d'avis</option>
+      </select>
+    </div>
+
+    <div class="artisan-list" id="artisan-list">
+
+      <!-- CARD 1 -->
+      <div class="artisan-card" data-metier="Carrelage" data-rating="4.9" data-dist="2">
+        <div class="artisan-avatar">🪟
+          <div class="verified">✓</div>
+        </div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-1">Jean-Pierre D.</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">🪟 Carrelage</span>
+            <span class="artisan-dist">📍 2 km · Mons</span>
+            <div class="badge-wrap">
+              <span class="badge badge-expert">🏆 Expert Validé</span>
+              <div class="badge-tooltip">Un expert ChantierZen a visité et validé la qualité de son travail sur chantier réel.</div>
+            </div>
+            <span class="individual-flag">👤 Artisan individuel</span>
+          </div>
+          <div class="artisan-rating">
+            <span class="stars">★★★★★</span>
+            <span class="rating-num">4.9</span>
+            <span class="rating-count">(47 avis)</span>
+          </div>
+          <div class="artisan-desc">Carreleur avec 15 ans d'expérience. Spécialisé dans la pose de grands formats et les salles de bain haut de gamme. Travail soigné et délais respectés.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">Grands formats</span>
+            <span class="artisan-tag">Salle de bain</span>
+            <span class="artisan-tag">Terrasse</span>
+            <span class="artisan-tag">🇫🇷 🇳🇱</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Dès <strong>35€/h</strong></div>
+        </div>
+      </div>
+
+      <!-- CARD 2 -->
+      <div class="artisan-card" data-metier="Peinture" data-rating="4.7" data-dist="5">
+        <div class="artisan-avatar" style="background: linear-gradient(135deg, #D5A55A, #E8C07D);">🖌️
+          <div class="verified">✓</div>
+        </div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-2">Peintures M. & Fils</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">🖌️ Peinture</span>
+            <span class="artisan-dist">📍 5 km · Jemappes</span>
+            <div class="badge-wrap">
+              <span class="badge badge-verifie">✅ Vérifié</span>
+              <div class="badge-tooltip">Des clients inscrits sur ChantierZen ont confirmé avoir travaillé avec cet artisan et laissé un avis authentique.</div>
+            </div>
+            <span class="badge badge-inscrit">🏢 Entreprise</span>
+          </div>
+          <div class="artisan-rating">
+            <span>✅ <span class="stars">★★★★★</span> <span class="rating-num">4.7</span> <span class="rating-count">(32 avis clients)</span></span>
+            <span style="margin:0 6px;color:#E5E0D8">·</span>
+            <span style="font-size:13px;color:#6B7280">🔍 Google <span style="color:#D5A55A">★</span> 4.5 (41)</span>
+          </div>
+          <div class="artisan-desc">Entreprise familiale depuis 1998. Peinture intérieure et extérieure, papier peint, traitement des façades. Devis gratuit sous 48h.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">Intérieur</span>
+            <span class="artisan-tag">Extérieur</span>
+            <span class="artisan-tag">Façade</span>
+            <span class="artisan-tag">🇫🇷</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Dès <strong>28€/h</strong></div>
+        </div>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="artisan-card" data-metier="Électricité" data-rating="4.8" data-dist="8">
+        <div class="artisan-avatar" style="background: linear-gradient(135deg, #2563EB, #3B82F6);">⚡
+          <div class="verified">✓</div>
+        </div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-3">Électro L. SPRL</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">⚡ Électricité</span>
+            <span class="artisan-dist">📍 8 km · Frameries</span>
+            <div class="badge-wrap">
+              <span class="badge badge-expert">🏆 Expert Validé</span>
+              <div class="badge-tooltip">Un expert ChantierZen s'est déplacé sur un chantier réel et a certifié la qualité du travail.</div>
+            </div>
+            <span class="badge badge-inscrit">🏢 Entreprise</span>
+          </div>
+          <div class="artisan-rating">
+            <span>✅ <span class="stars">★★★★★</span> <span class="rating-num">4.8</span> <span class="rating-count">(61 avis clients)</span></span>
+            <span style="margin:0 6px;color:#E5E0D8">·</span>
+            <span style="font-size:13px;color:#6B7280">🔍 Google <span style="color:#D5A55A">★</span> 4.6 (89)</span>
+          </div>
+          <div class="artisan-desc">Électricien agréé RGIE. Installations complètes, dépannage, mise en conformité. Disponible en urgence. Couverture Hainaut et Brabant Wallon.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">RGIE</span>
+            <span class="artisan-tag">Urgence</span>
+            <span class="artisan-tag">Rénovation</span>
+            <span class="artisan-tag">🇫🇷 🇳🇱 🇬🇧</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Dès <strong>45€/h</strong></div>
+        </div>
+      </div>
+
+      <!-- CARD 4 -->
+      <div class="artisan-card" data-metier="Plomberie" data-rating="4.6" data-dist="12">
+        <div class="artisan-avatar" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">🔧</div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-4">Karim B.</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">🔧 Plomberie</span>
+            <span class="artisan-dist">📍 12 km · La Louvière</span>
+            <div class="badge-wrap">
+              <span class="badge badge-inscrit">🔵 Inscrit</span>
+              <div class="badge-tooltip">Artisan nouvellement inscrit. Pas encore d'avis de clients ChantierZen.</div>
+            </div>
+            <span class="individual-flag">👤 Artisan individuel</span>
+          </div>
+          <div class="artisan-rating">
+            <span style="font-size:13px;color:#9CA3AF">✅ Pas encore d'avis ChantierZen</span>
+            <span style="margin:0 6px;color:#E5E0D8">·</span>
+            <span style="font-size:13px;color:#6B7280">🔍 Google <span style="color:#D5A55A">★</span> 4.6 (28)</span>
+          </div>
+          <div class="artisan-desc">Plombier indépendant sérieux. Dépannage rapide, installation sanitaires, chauffage. Tarifs transparents, pas de mauvaise surprise.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">Dépannage</span>
+            <span class="artisan-tag">Sanitaires</span>
+            <span class="artisan-tag">Chauffage</span>
+            <span class="artisan-tag">🇫🇷</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Dès <strong>38€/h</strong></div>
+        </div>
+      </div>
+
+      <!-- CARD 5 -->
+      <div class="artisan-card" data-metier="Toiture" data-rating="4.9" data-dist="18">
+        <div class="artisan-avatar" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6);">🏠
+          <div class="verified">✓</div>
+        </div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-5">Couvertures R.</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">🏠 Toiture</span>
+            <span class="artisan-dist">📍 18 km · Charleroi</span>
+            <div class="badge-wrap">
+              <span class="badge badge-expert">🏆 Expert Validé</span>
+              <div class="badge-tooltip">Un expert ChantierZen s'est déplacé sur un chantier réel et a certifié la qualité du travail.</div>
+            </div>
+            <span class="badge badge-inscrit">🏢 Entreprise</span>
+          </div>
+          <div class="artisan-rating">
+            <span>✅ <span class="stars">★★★★★</span> <span class="rating-num">4.9</span> <span class="rating-count">(53 avis clients)</span></span>
+            <span style="margin:0 6px;color:#E5E0D8">·</span>
+            <span style="font-size:13px;color:#6B7280">🔍 Google <span style="color:#D5A55A">★</span> 4.8 (67)</span>
+          </div>
+          <div class="artisan-desc">Spécialiste toiture depuis 20 ans. Réparation, remplacement complet, zinguerie, isolation toiture. Garantie décennale.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">Réparation</span>
+            <span class="artisan-tag">Zinguerie</span>
+            <span class="artisan-tag">Isolation</span>
+            <span class="artisan-tag">🇫🇷 🇳🇱</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Devis gratuit</div>
+        </div>
+      </div>
+
+      <!-- CARD 6 -->
+      <div class="artisan-card" data-metier="Menuiserie" data-rating="4.5" data-dist="22">
+        <div class="artisan-avatar" style="background: linear-gradient(135deg, #92400E, #B45309);">🪚</div>
+        <div class="artisan-info">
+          <div class="artisan-name" id="card-6">Menuiserie D.</div>
+          <div class="artisan-meta">
+            <span class="artisan-metier">🪚 Menuiserie</span>
+            <span class="artisan-dist">📍 22 km · Binche</span>
+            <div class="badge-wrap">
+              <span class="badge badge-verifie">✅ Vérifié</span>
+              <div class="badge-tooltip">Des clients inscrits sur ChantierZen ont confirmé avoir travaillé avec cet artisan et laissé un avis authentique.</div>
+            </div>
+            <span class="badge badge-inscrit">🏢 Entreprise</span>
+          </div>
+          <div class="artisan-rating">
+            <span>✅ <span class="stars">★★★★☆</span> <span class="rating-num">4.5</span> <span class="rating-count">(19 avis clients)</span></span>
+            <span style="margin:0 6px;color:#E5E0D8">·</span>
+            <span style="font-size:13px;color:#6B7280">🔍 Google <span style="color:#D5A55A">★</span> 4.3 (31)</span>
+          </div>
+          <div class="artisan-desc">Menuisier traditionnel. Fabrication sur mesure, pose de fenêtres, portes, escaliers, parquet. Bois massif ou PVC selon votre budget.</div>
+          <div class="artisan-tags">
+            <span class="artisan-tag">Sur mesure</span>
+            <span class="artisan-tag">Fenêtres</span>
+            <span class="artisan-tag">Parquet</span>
+            <span class="artisan-tag">🇫🇷</span>
+          </div>
+        </div>
+        <div class="artisan-actions">
+          <button class="btn-contact">Contacter</button>
+          <a href="/profil"><button class="btn-view">Voir profil</button></a>
+          <div class="artisan-price">Dès <strong>40€/h</strong></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">›</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  function toggleLang() {
+    document.getElementById('lang-dropdown').classList.toggle('open');
+  }
+  function setLang(code, country) {
+    document.getElementById('current-flag').src = 'https://flagcdn.com/w20/' + country + '.png';
+    document.getElementById('current-lang').textContent = code;
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('lang-dropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.lang-selector')) {
+      document.getElementById('lang-dropdown').classList.remove('open');
+    }
+  });
+
+  // Système de connexion simulé
+  let isLoggedIn = false;
+
+  const fullNames = {
+    'card-1': 'Jean-Pierre Dubois',
+    'card-2': 'Peintures Martin & Fils',
+    'card-3': 'Électro Leroy SPRL',
+    'card-4': 'Karim Benali',
+    'card-5': 'Couvertures Renard',
+    'card-6': 'Menuiserie Dupont'
+  };
+  const partialNames = {
+    'card-1': 'Jean-Pierre D.',
+    'card-2': 'Peintures M. & Fils',
+    'card-3': 'Électro L. SPRL',
+    'card-4': 'Karim B.',
+    'card-5': 'Couvertures R.',
+    'card-6': 'Menuiserie D.'
+  };
+
+  function updateNames() {
+    Object.keys(fullNames).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = isLoggedIn ? fullNames[id] : partialNames[id];
+      }
+    });
+    // Mettre à jour les boutons
+    document.querySelectorAll('.btn-contact').forEach(btn => {
+      btn.textContent = isLoggedIn ? 'Contacter' : '🔒 Connectez-vous';
+      btn.onclick = isLoggedIn ? null : showLoginPrompt;
+    });
+    document.querySelectorAll('.btn-view').forEach(btn => {
+      btn.textContent = isLoggedIn ? 'Voir profil' : 'Voir aperçu';
+    });
+    // Mettre à jour la barre nav
+    document.getElementById('nav-login-btn').style.display = isLoggedIn ? 'none' : 'block';
+    document.getElementById('nav-logout-btn').style.display = isLoggedIn ? 'block' : 'none';
+  }
+
+  function toggleLogin() {
+    isLoggedIn = !isLoggedIn;
+    updateNames();
+    showLoginBanner();
+  }
+
+  function showLoginPrompt() {
+    document.getElementById('login-prompt').classList.add('open');
+  }
+
+  function closeLoginPrompt() {
+    document.getElementById('login-prompt').classList.remove('open');
+  }
+
+  function loginFromPrompt() {
+    isLoggedIn = true;
+    closeLoginPrompt();
+    updateNames();
+    showBanner('✅ Connecté ! Vous pouvez maintenant voir les noms complets et contacter les artisans.');
+  }
+
+  function showLoginBanner() {
+    if (isLoggedIn) {
+      showBanner('✅ Connecté ! Noms complets et contacts débloqués.');
+    } else {
+      showBanner('🔒 Déconnecté. Les noms sont masqués.');
+    }
+  }
+
+  function showBanner(msg) {
+    const b = document.getElementById('login-banner');
+    document.getElementById('banner-msg').textContent = msg;
+    b.classList.add('show');
+    setTimeout(() => b.classList.remove('show'), 3000);
+  }
+
+  function filterResults() {
+    const metier = document.getElementById('metier-select').value;
+    const cards = document.querySelectorAll('.artisan-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const cardMetier = card.dataset.metier;
+      const show = !metier || cardMetier === metier;
+      card.style.display = show ? 'grid' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('results-count').textContent = visible;
+  }
+
+  // Init au chargement
+  updateNames();
+
+  function sortResults(by) {
+    const list = document.getElementById('artisan-list');
+    const cards = Array.from(list.querySelectorAll('.artisan-card'));
+    cards.sort((a, b) => {
+      if (by === 'rating') return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+      if (by === 'distance') return parseFloat(a.dataset.dist) - parseFloat(b.dataset.dist);
+      return 0;
+    });
+    cards.forEach(c => list.appendChild(c));
+  }
+
+  function resetFilters() {
+    document.getElementById('metier-select').value = '';
+    document.querySelectorAll('.filters input').forEach(i => { i.checked = false; });
+    document.querySelector('input[name="rating"][value="0"]').checked = true;
+    filterResults();
+  }
+</script>
+
+</body>
+</html>

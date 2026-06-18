@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChantierZen — Gestion de chantier</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #FDFAF6; color: #1A2E1A; }
+
+  /* NAV */
+  nav {
+    background: #fff;
+    border-bottom: 2px solid #E5E0D8;
+    padding: 0 3rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .logo { font-size: 24px; font-weight: 800; color: #1E8449; letter-spacing: -0.5px; cursor: pointer; }
+  .logo span { color: #D5A55A; }
+  .nav-links { display: flex; gap: 0.5rem; list-style: none; justify-content: center; }
+  .nav-links a { color: #4B5563; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; padding: 7px 14px; border-radius: 8px; transition: all 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: #1E8449; background: #E9F7EF; }
+  .nav-btns { display: flex; gap: 0.75rem; align-items: center; }
+  .btn-outline { background: transparent; color: #1E8449; border: 2px solid #1E8449; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: #1E8449; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #27AE60; }
+
+  /* LANG */
+  .lang-selector { position: relative; }
+  .lang-btn { background: linear-gradient(135deg, #E9F7EF, #fff); border: 1.5px solid #1E8449; border-radius: 20px; padding: 7px 14px; font-size: 14px; font-weight: 700; cursor: pointer; color: #1E8449; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(30,132,73,0.12); }
+  .lang-btn img { width: 20px; height: 14px; border-radius: 3px; }
+  .lang-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1.5px solid #E5E0D8; border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.12); min-width: 180px; z-index: 200; padding: 6px; }
+  .lang-dropdown.open { display: block; }
+  .lang-option { padding: 9px 12px; font-size: 14px; cursor: pointer; color: #1A2E1A; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .lang-option img { width: 22px; height: 15px; border-radius: 3px; }
+  .lang-option:hover { background: #E9F7EF; color: #1E8449; }
+  .lang-option.active { background: #E9F7EF; color: #1E8449; font-weight: 700; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1A2E1A 0%, #1E8449 100%);
+    color: #fff;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+  }
+  .hero-eyebrow { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 5px 18px; font-size: 13px; font-weight: 600; margin-bottom: 1.5rem; letter-spacing: 0.5px; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; margin-bottom: 1rem; line-height: 1.15; letter-spacing: -1px; }
+  .hero h1 span { color: #D5A55A; }
+  .hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7; }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-gold-lg { background: #D5A55A; color: #fff; border: none; border-radius: 10px; padding: 16px 32px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-gold-lg:hover { background: #C49448; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(213,165,90,0.4); }
+  .btn-white-lg { background: rgba(255,255,255,0.12); color: #fff; border: 2px solid rgba(255,255,255,0.4); border-radius: 10px; padding: 16px 32px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-white-lg:hover { background: rgba(255,255,255,0.2); }
+
+  /* PAIN POINTS */
+  .pain-section { background: #fff; padding: 5rem 2rem; }
+  .pain-inner { max-width: 1000px; margin: 0 auto; }
+  .eyebrow { display: inline-block; background: #E9F7EF; color: #1E8449; border-radius: 20px; padding: 4px 16px; font-size: 13px; font-weight: 600; margin-bottom: 1rem; }
+  .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+  .section-sub { font-size: 16px; color: #6B7280; margin-bottom: 3rem; max-width: 560px; line-height: 1.6; }
+  .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+  .pain-card { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 14px; padding: 1.25rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .pain-icon { font-size: 28px; flex-shrink: 0; }
+  .pain-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: #991B1B; }
+  .pain-desc { font-size: 14px; color: #6B7280; line-height: 1.6; }
+
+  /* HOW IT WORKS */
+  .how-section { padding: 5rem 2rem; max-width: 1000px; margin: 0 auto; }
+  .steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .steps::before { content: ''; position: absolute; left: 28px; top: 40px; bottom: 40px; width: 2px; background: linear-gradient(to bottom, #1E8449, #D5A55A); }
+  .step { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem 0; position: relative; }
+  .step-num { width: 56px; height: 56px; border-radius: 50%; background: #1E8449; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; flex-shrink: 0; border: 4px solid #FDFAF6; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(30,132,73,0.3); }
+  .step-content { padding-top: 12px; flex: 1; }
+  .step-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .step-desc { font-size: 15px; color: #6B7280; line-height: 1.7; }
+  .step-detail { margin-top: 0.75rem; background: #fff; border-radius: 10px; border: 1px solid #E5E0D8; padding: 0.75rem 1rem; font-size: 13px; color: #374151; line-height: 1.6; }
+
+  /* PRICING */
+  .pricing-section { background: #fff; padding: 5rem 2rem; }
+  .pricing-inner { max-width: 900px; margin: 0 auto; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+  .pricing-card { border-radius: 20px; border: 2px solid #E5E0D8; padding: 2rem; position: relative; transition: all 0.2s; background: #fff; }
+  .pricing-card:hover { border-color: #1E8449; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .pricing-card.featured { border-color: #1E8449; box-shadow: 0 8px 32px rgba(30,132,73,0.15); }
+  .pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #1E8449; color: #fff; font-size: 12px; font-weight: 700; border-radius: 20px; padding: 4px 14px; white-space: nowrap; }
+  .pricing-icon { font-size: 36px; margin-bottom: 1rem; }
+  .pricing-name { font-size: 18px; font-weight: 800; margin-bottom: 0.5rem; }
+  .pricing-desc { font-size: 14px; color: #6B7280; margin-bottom: 1.5rem; line-height: 1.6; }
+  .pricing-price { font-size: 36px; font-weight: 800; color: #1E8449; letter-spacing: -1px; }
+  .pricing-price span { font-size: 16px; font-weight: 500; color: #6B7280; }
+  .pricing-or { font-size: 13px; color: #9CA3AF; margin: 4px 0 1.5rem; }
+  .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+  .pricing-features li { font-size: 14px; color: #374151; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .pricing-features li::before { content: '✅'; flex-shrink: 0; font-size: 13px; }
+  .btn-pricing { width: 100%; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-pricing-primary { background: #1E8449; color: #fff; }
+  .btn-pricing-primary:hover { background: #27AE60; }
+  .btn-pricing-outline { background: transparent; color: #1E8449; border: 2px solid #1E8449; }
+  .btn-pricing-outline:hover { background: #E9F7EF; }
+
+  /* REASSURANCE */
+  .reassurance { padding: 5rem 2rem; max-width: 1000px; margin: 0 auto; }
+  .reassurance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+  .reassurance-card { text-align: center; padding: 2rem 1.5rem; background: #fff; border-radius: 16px; border: 1px solid #E5E0D8; }
+  .reassurance-icon { font-size: 40px; margin-bottom: 1rem; }
+  .reassurance-title { font-size: 16px; font-weight: 800; margin-bottom: 0.5rem; }
+  .reassurance-desc { font-size: 14px; color: #6B7280; line-height: 1.6; }
+
+  /* FORM SECTION */
+  .form-section { background: linear-gradient(135deg, #1A2E1A, #1E8449); padding: 5rem 2rem; }
+  .form-inner { max-width: 700px; margin: 0 auto; }
+  .form-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: #fff; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+  .form-sub { font-size: 16px; color: rgba(255,255,255,0.75); margin-bottom: 2rem; line-height: 1.6; }
+  .form-card { background: #fff; border-radius: 20px; padding: 2rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; border: 1.5px solid #E5E0D8; border-radius: 8px; padding: 11px 14px;
+    font-size: 15px; color: #1A2E1A; background: #FDFAF6; outline: none; font-family: inherit; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1E8449; box-shadow: 0 0 0 3px rgba(30,132,73,0.1); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .budget-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .budget-option { border: 2px solid #E5E0D8; border-radius: 10px; padding: 0.75rem; text-align: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #6B7280; transition: all 0.2s; background: #fff; }
+  .budget-option:hover, .budget-option.selected { border-color: #1E8449; color: #1E8449; background: #E9F7EF; }
+  .btn-submit-form { width: 100%; background: #1E8449; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; transition: all 0.2s; }
+  .btn-submit-form:hover { background: #27AE60; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30,132,73,0.3); }
+  .form-note { font-size: 12px; color: #9CA3AF; text-align: center; margin-top: 0.75rem; }
+
+  /* SUCCESS */
+  .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
+  .success-overlay.open { display: flex; }
+  .success-modal { background: #fff; border-radius: 24px; padding: 3rem 2rem; max-width: 440px; width: 90%; text-align: center; }
+  .success-icon { font-size: 64px; margin-bottom: 1rem; }
+  .success-title { font-size: 24px; font-weight: 800; margin-bottom: 0.75rem; }
+  .success-text { font-size: 15px; color: #6B7280; line-height: 1.7; margin-bottom: 1.5rem; }
+  .success-steps { background: #E9F7EF; border-radius: 12px; padding: 1rem 1.25rem; text-align: left; margin-bottom: 1.5rem; }
+  .success-step { font-size: 14px; color: #1A2E1A; padding: 4px 0; display: flex; gap: 8px; }
+  .btn-success { background: #1E8449; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+  /* FOOTER */
+  footer { background: #111; color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 14px; }
+  .footer-logo { color: #27AE60; font-weight: 700; font-size: 18px; margin-bottom: 0.5rem; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+    .steps::before { display: none; }
+    .budget-options { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" style="text-decoration:none"><div class="logo">Chantier<span>Zen</span></div></a>
+  <ul class="nav-links">
+    <li><a href="/recherche">Artisans</a></li>
+    <li><a href="/gestion" class="active">Gestion de chantier</a></li>
+    <li><a href="/#how-section">Comment ça marche</a></li>
+  </ul>
+  <div class="nav-btns">
+    <div class="lang-selector">
+      <button class="lang-btn" onclick="toggleLang()">
+        <img src="https://flagcdn.com/w20/be.png" alt="FR" id="current-flag">
+        <span id="current-lang">FR</span> ▾
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option active" onclick="setLang('FR','be')"><img src="https://flagcdn.com/w20/be.png"> Français <span style="margin-left:auto">✓</span></div>
+        <div class="lang-option" onclick="setLang('NL','nl')"><img src="https://flagcdn.com/w20/nl.png"> Nederlands</div>
+        <div class="lang-option" onclick="setLang('DE','de')"><img src="https://flagcdn.com/w20/de.png"> Deutsch</div>
+        <div class="lang-option" onclick="setLang('EN','gb')"><img src="https://flagcdn.com/w20/gb.png"> English</div>
+      </div>
+    </div>
+    <button class="btn-outline">Connexion</button>
+    <button class="btn-primary">Inscription</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">🤝 Service exclusif ChantierZen</div>
+  <h1>Votre chantier géré<br>par <span>un expert</span></h1>
+  <p>Finies les dizaines d'appels, les devis qui n'arrivent pas, les artisans qui ne se pointent pas. On s'occupe de tout à votre place.</p>
+  <div class="hero-btns">
+    <button class="btn-gold-lg" onclick="scrollToForm()">Confier mon chantier →</button>
+    <button class="btn-white-lg" onclick="scrollToHow()">Comment ça marche</button>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section class="pain-section">
+  <div class="pain-inner">
+    <span class="eyebrow">😤 Ça vous parle ?</span>
+    <h2 class="section-title">Les galères que vous ne vivrez plus</h2>
+    <p class="section-sub">Chaque Belge qui a fait des travaux a vécu au moins une de ces situations.</p>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-icon">📞</div>
+        <div>
+          <div class="pain-title">Les appels sans fin</div>
+          <div class="pain-desc">Contacter 10 artisans, en avoir 3 qui répondent, 1 qui vient faire le devis.</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">⏳</div>
+        <div>
+          <div class="pain-title">Les devis qui n'arrivent jamais</div>
+          <div class="pain-desc">"Je vous envoie ça ce soir" — 3 semaines plus tard, toujours rien.</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">🤷</div>
+        <div>
+          <div class="pain-title">Comparer des devis incomparables</div>
+          <div class="pain-desc">L'un inclut les matériaux, l'autre non. L'un compte en heures, l'autre au forfait.</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">🚧</div>
+        <div>
+          <div class="pain-title">L'artisan qui disparaît</div>
+          <div class="pain-desc">Il commence, puis ne revient plus. Ou il arrive quand il veut sans prévenir.</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">😰</div>
+        <div>
+          <div class="pain-title">Ne pas savoir si c'est bien fait</div>
+          <div class="pain-desc">Le travail est terminé mais vous ne savez pas si c'est de qualité ou si vous payez trop cher.</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">📋</div>
+        <div>
+          <div class="pain-title">Coordonner plusieurs corps de métier</div>
+          <div class="pain-desc">L'électricien doit passer avant le plaquiste, qui doit finir avant le peintre...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-section" style="padding: 5rem 2rem; background: #FDFAF6;">
+  <div style="max-width:800px; margin:0 auto;">
+    <span class="eyebrow">Comment ça marche</span>
+    <h2 class="section-title">Un seul appel. On gère tout.</h2>
+    <p class="section-sub">Du premier contact jusqu'à la réception du chantier.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Vous décrivez votre projet</div>
+          <div class="step-desc">Via le formulaire ci-dessous ou par téléphone. En 10 minutes on comprend exactement ce dont vous avez besoin.</div>
+          <div class="step-detail">📋 Type de travaux · Surface · Budget approximatif · Délai souhaité · Contraintes particulières</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">On se rencontre sur place</div>
+          <div class="step-desc">Je me déplace chez vous gratuitement pour voir le chantier, évaluer les travaux et répondre à toutes vos questions.</div>
+          <div class="step-detail">🏠 Visite gratuite et sans engagement · Sous 48-72h · Je viens seul, pas d'artisans à ce stade</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Je trouve les meilleurs artisans</div>
+          <div class="step-desc">Je contacte les artisans de ma plateforme, je compare les devis et je vous présente les meilleures options avec mon avis professionnel.</div>
+          <div class="step-detail">🔍 Minimum 3 devis comparables · Artisans vérifiés ChantierZen · Comparatif clair qualité/prix</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Vous choisissez, on planifie</div>
+          <div class="step-desc">Vous validez l'artisan de votre choix. Je coordonne le planning, les livraisons, les accès au chantier.</div>
+          <div class="step-detail">📅 Planning détaillé · Coordination entre corps de métier · Un seul interlocuteur : moi</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Je suis le chantier pour vous</div>
+          <div class="step-desc">Je passe régulièrement sur place, je réponds aux artisans à votre place, je vous tiens informé par photos et messages.</div>
+          <div class="step-detail">📸 Photos de suivi régulières · Gestion des imprévus · Vous travaillez tranquillement</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Réception et validation finale</div>
+          <div class="step-desc">Je fais le tour du chantier avec vous, je vérifie chaque détail et je m'assure que tout est conforme avant le paiement final.</div>
+          <div class="step-detail">✅ Checklist de réception · Réserves notées si nécessaire · Paiement artisan uniquement si vous êtes satisfait</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section">
+  <div class="pricing-inner">
+    <div style="text-align:center; margin-bottom:3rem;">
+      <span class="eyebrow">Tarifs</span>
+      <h2 class="section-title">Transparent et sans surprise</h2>
+      <p class="section-sub" style="margin:0 auto;">Comme pour vos artisans, je vous donne le prix dès le départ.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-icon">🔍</div>
+        <div class="pricing-name">Conseil & Devis</div>
+        <div class="pricing-desc">Vous voulez juste des conseils et des devis comparés sans gestion complète.</div>
+        <div class="pricing-price">300€ <span>forfait</span></div>
+        <div class="pricing-or">Visite + 3 devis comparatifs</div>
+        <ul class="pricing-features">
+          <li>Visite sur place gratuite</li>
+          <li>3 devis d'artisans vérifiés</li>
+          <li>Comparatif détaillé</li>
+          <li>Mon avis professionnel</li>
+        </ul>
+        <button class="btn-pricing btn-pricing-outline" onclick="selectFormule('conseil')">Choisir cette formule</button>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⭐ Le plus choisi</div>
+        <div class="pricing-icon">🤝</div>
+        <div class="pricing-name">Gestion Complète</div>
+        <div class="pricing-desc">Je gère tout de A à Z. Vous n'avez qu'un seul appel à passer.</div>
+        <div class="pricing-price">8% <span>du chantier</span></div>
+        <div class="pricing-or">ou forfait selon devis</div>
+        <ul class="pricing-features">
+          <li>Tout le formule Conseil</li>
+          <li>Suivi complet du chantier</li>
+          <li>Présence sur place régulière</li>
+          <li>Gestion des imprévus</li>
+          <li>Photos de suivi régulières</li>
+          <li>Réception finale du chantier</li>
+        </ul>
+        <button class="btn-pricing btn-pricing-primary" onclick="selectFormule('gestion')">Confier mon chantier →</button>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-icon">🏗️</div>
+        <div class="pricing-name">Grand Projet</div>
+        <div class="pricing-desc">Rénovation complète, extension, projet complexe multi-corps de métier.</div>
+        <div class="pricing-price">Sur <span>devis</span></div>
+        <div class="pricing-or">Tarif personnalisé</div>
+        <ul class="pricing-features">
+          <li>Tout le formule Gestion</li>
+          <li>Coordination multi-artisans</li>
+          <li>Planning de chantier détaillé</li>
+          <li>Réunions de chantier</li>
+          <li>Rapport hebdomadaire</li>
+          <li>Garantie satisfaction</li>
+        </ul>
+        <button class="btn-pricing btn-pricing-outline" onclick="selectFormule('grand')">Demander un devis</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REASSURANCE -->
+<section class="reassurance">
+  <div style="text-align:center; margin-bottom:3rem;">
+    <span class="eyebrow">Pourquoi nous faire confiance</span>
+    <h2 class="section-title">Ce qui nous rend différents</h2>
+  </div>
+  <div class="reassurance-grid">
+    <div class="reassurance-card">
+      <div class="reassurance-icon">🔍</div>
+      <div class="reassurance-title">Connaissance du terrain</div>
+      <div class="reassurance-desc">On connaît les artisans de notre plateforme, leurs points forts et leurs spécialités.</div>
+    </div>
+    <div class="reassurance-card">
+      <div class="reassurance-icon">💬</div>
+      <div class="reassurance-title">Un seul interlocuteur</div>
+      <div class="reassurance-desc">Vous avez mon numéro. Je réponds. Pas de hotline, pas de ticket support.</div>
+    </div>
+    <div class="reassurance-card">
+      <div class="reassurance-icon">📸</div>
+      <div class="reassurance-title">Suivi en temps réel</div>
+      <div class="reassurance-desc">Photos et messages réguliers. Vous savez toujours où en est votre chantier.</div>
+    </div>
+    <div class="reassurance-card">
+      <div class="reassurance-icon">✅</div>
+      <div class="reassurance-title">Paiement sécurisé</div>
+      <div class="reassurance-desc">L'artisan est payé uniquement quand vous êtes satisfait du résultat.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<section class="form-section" id="form-section">
+  <div class="form-inner">
+    <div class="form-title">Décrivez votre projet</div>
+    <div class="form-sub">Réponse garantie sous 24h. Visite gratuite et sans engagement.</div>
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Prénom *</label>
+          <input type="text" placeholder="Jean" id="f-prenom">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Nom *</label>
+          <input type="text" placeholder="Dupont" id="f-nom">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:1rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Téléphone *</label>
+          <input type="tel" placeholder="+32 470 00 00 00" id="f-tel">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Email *</label>
+          <input type="email" placeholder="vous@email.com" id="f-email">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label>Ville / Code postal *</label>
+        <input type="text" placeholder="Mons, 7000" id="f-ville">
+      </div>
+      <div class="form-group">
+        <label>Type de travaux *</label>
+        <select id="f-type">
+          <option value="">Sélectionnez...</option>
+          <option>Salle de bain</option>
+          <option>Cuisine</option>
+          <option>Peinture intérieure</option>
+          <option>Carrelage</option>
+          <option>Électricité</option>
+          <option>Plomberie</option>
+          <option>Toiture</option>
+          <option>Isolation</option>
+          <option>Rénovation complète</option>
+          <option>Extension / Agrandissement</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Budget approximatif</label>
+        <div class="budget-options">
+          <div class="budget-option" onclick="selectBudget(this)">Moins de 5.000€</div>
+          <div class="budget-option" onclick="selectBudget(this)">5.000 — 15.000€</div>
+          <div class="budget-option" onclick="selectBudget(this)">15.000 — 50.000€</div>
+          <div class="budget-option" onclick="selectBudget(this)">Plus de 50.000€</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Décrivez votre projet</label>
+        <textarea placeholder="Dites-nous en plus : surface, état actuel, vos souhaits, contraintes particulières..." id="f-desc"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Formule souhaitée</label>
+        <select id="f-formule">
+          <option value="gestion">🤝 Gestion Complète (recommandé)</option>
+          <option value="conseil">🔍 Conseil & Devis uniquement</option>
+          <option value="grand">🏗️ Grand Projet — devis personnalisé</option>
+        </select>
+      </div>
+      <button class="btn-submit-form" onclick="submitForm()">Envoyer ma demande gratuitement →</button>
+      <div class="form-note">🔒 Vos données sont confidentielles · Réponse sous 24h · Visite sans engagement</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ChantierZen</div>
+  <div>Vos travaux entre de bonnes mains · Belgique</div>
+  <div style="margin-top:0.5rem;font-size:12px">© 2026 ChantierZen · Tous droits réservés</div>
+</footer>
+
+<!-- SUCCESS MODAL -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-modal">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Demande reçue !</div>
+    <div class="success-text">Merci pour votre confiance. Voici ce qui va se passer maintenant :</div>
+    <div class="success-steps">
+      <div class="success-step">📱 <span>Vous recevez un SMS de confirmation dans quelques minutes</span></div>
+      <div class="success-step">📞 <span>Je vous appelle personnellement sous <strong>24h</strong></span></div>
+      <div class="success-step">🏠 <span>On planifie la visite gratuite chez vous</span></div>
+    </div>
+    <button class="btn-success" onclick="closeSuccess()">Parfait, merci !</button>
+  </div>
+</div>
+
+<script>
+  function toggleLang() { document.getElementById('lang-dropdown').classList.toggle('open'); }
+  function setLang(code, country) {
+    document.getElementById('current-flag').src = 'https://flagcdn.com/w20/' + country + '.png';
+    document.getElementById('current-lang').textContent = code;
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('lang-dropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.lang-selector')) document.getElementById('lang-dropdown').classList.remove('open');
+  });
+
+  function scrollToForm() { document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' }); }
+  function scrollToHow() { document.getElementById('how-section').scrollIntoView({ behavior: 'smooth' }); }
+
+  function selectBudget(el) {
+    document.querySelectorAll('.budget-option').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectFormule(f) {
+    document.getElementById('f-formule').value = f;
+    scrollToForm();
+  }
+
+  function submitForm() {
+    const prenom = document.getElementById('f-prenom').value;
+    const tel = document.getElementById('f-tel').value;
+    const type = document.getElementById('f-type').value;
+    if (!prenom || !tel || !type) {
+      alert('Veuillez remplir au minimum votre prénom, téléphone et type de travaux.');
+      return;
+    }
+    document.getElementById('success-overlay').classList.add('open');
+  }
+
+  function closeSuccess() {
+    document.getElementById('success-overlay').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

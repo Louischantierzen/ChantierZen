@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChantierZen — Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F3F4F6; color: #1A2E1A; display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    background: #1A2E1A;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.75rem; }
+  .logo { font-size: 20px; font-weight: 800; color: #27AE60; }
+  .logo span { color: #D5A55A; }
+  .admin-badge { background: #D5A55A; color: #fff; font-size: 10px; font-weight: 800; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.5px; }
+
+  .sidebar-user { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.75rem; }
+  .user-avatar { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #D5A55A, #E8C07D); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .user-name { font-size: 14px; font-weight: 700; }
+  .user-role { font-size: 12px; color: #D5A55A; font-weight: 600; }
+
+  .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+  .nav-section-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; padding: 0.5rem 1.5rem; margin-top: 0.5rem; }
+  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1.5rem; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.65); cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-item.active { background: rgba(213,165,90,0.15); color: #D5A55A; border-left-color: #D5A55A; font-weight: 700; }
+  .nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+  .nav-badge { margin-left: auto; background: #EF4444; color: #fff; font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 7px; }
+  .nav-badge.gold { background: #D5A55A; }
+  .nav-badge.green { background: #27AE60; }
+
+  .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .btn-logout { width: 100%; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: none; border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; }
+  .btn-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  /* MAIN */
+  .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+
+  /* TOPBAR */
+  .topbar { background: #fff; border-bottom: 1px solid #E5E0D8; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .topbar-title { font-size: 18px; font-weight: 800; }
+  .topbar-right { display: flex; align-items: center; gap: 1rem; }
+  .topbar-btn { background: none; border: none; font-size: 20px; cursor: pointer; position: relative; }
+  .notif-dot { position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: #EF4444; border-radius: 50%; border: 2px solid #fff; }
+  .btn-voir-site { background: #E9F7EF; color: #1E8449; border: 1.5px solid #1E8449; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* CONTENT */
+  .content { padding: 2rem; }
+
+  /* ALERT BANNER */
+  .alert-banner { background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 1.5px solid #F59E0B; border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .alert-text { font-size: 14px; font-weight: 600; color: #92400E; display: flex; align-items: center; gap: 8px; }
+  .btn-alert { background: #92400E; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border-radius: 14px; border: 1px solid #E5E0D8; padding: 1.25rem 1.5rem; }
+  .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+  .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .stat-trend { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .trend-up { background: #E9F7EF; color: #1E8449; }
+  .trend-down { background: #FEE2E2; color: #DC2626; }
+  .stat-value { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin-bottom: 3px; }
+  .stat-label { font-size: 13px; color: #6B7280; }
+
+  /* THREE COL */
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .two-col { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+  /* PANELS */
+  .panel { background: #fff; border-radius: 16px; border: 1px solid #E5E0D8; overflow: hidden; }
+  .panel-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; align-items: center; }
+  .panel-title { font-size: 15px; font-weight: 800; }
+  .panel-link { font-size: 13px; color: #1E8449; font-weight: 600; cursor: pointer; }
+  .panel-body { padding: 0 1.5rem; }
+
+  /* DEMANDES TABLE */
+  .table { width: 100%; border-collapse: collapse; }
+  .table th { font-size: 11px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.75rem 0; border-bottom: 1px solid #F3F4F6; text-align: left; }
+  .table td { padding: 1rem 0; border-bottom: 1px solid #F3F4F6; font-size: 14px; vertical-align: middle; }
+  .table tr:last-child td { border-bottom: none; }
+  .table tr:hover td { background: #FDFAF6; }
+  .client-info { display: flex; align-items: center; gap: 0.75rem; }
+  .client-avatar { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #E9F7EF, #D5F5E3); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .client-name { font-size: 14px; font-weight: 700; }
+  .client-ville { font-size: 12px; color: #6B7280; }
+  .status-pill { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 10px; white-space: nowrap; }
+  .status-new { background: #EDE9FE; color: #5B21B6; }
+  .status-progress { background: #FEF3C7; color: #92400E; }
+  .status-done { background: #E9F7EF; color: #1E8449; }
+  .status-pending { background: #F3F4F6; color: #6B7280; }
+  .action-btns { display: flex; gap: 0.5rem; }
+  .btn-sm { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-sm-primary { background: #1E8449; color: #fff; }
+  .btn-sm-outline { background: transparent; color: #1E8449; border: 1.5px solid #1E8449; }
+  .btn-sm-gold { background: #D5A55A; color: #fff; }
+  .btn-sm-red { background: #EF4444; color: #fff; }
+
+  /* ARTISANS EN ATTENTE */
+  .artisan-pending { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 0; border-bottom: 1px solid #F3F4F6; }
+  .artisan-pending:last-child { border-bottom: none; }
+  .artisan-pending-avatar { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #1E8449, #27AE60); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .artisan-pending-name { font-size: 14px; font-weight: 700; }
+  .artisan-pending-meta { font-size: 12px; color: #6B7280; }
+  .artisan-pending-actions { margin-left: auto; display: flex; gap: 0.5rem; }
+
+  /* BADGE REQUESTS */
+  .badge-request { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 0; border-bottom: 1px solid #F3F4F6; }
+  .badge-request:last-child { border-bottom: none; }
+  .badge-request-avatar { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #FEF3C7, #FDE68A); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .badge-request-name { font-size: 14px; font-weight: 700; }
+  .badge-request-meta { font-size: 12px; color: #6B7280; }
+  .badge-request-actions { margin-left: auto; display: flex; gap: 0.5rem; }
+
+  /* MESSAGES */
+  .msg-item { display: flex; gap: 0.75rem; padding: 0.875rem 0; border-bottom: 1px solid #F3F4F6; cursor: pointer; }
+  .msg-item:last-child { border-bottom: none; }
+  .msg-item:hover { background: #FDFAF6; margin: 0 -1.5rem; padding: 0.875rem 1.5rem; }
+  .msg-avatar { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #E5E0D8, #D5C5B0); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .msg-content { flex: 1; min-width: 0; }
+  .msg-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .msg-name { font-size: 14px; font-weight: 700; }
+  .msg-time { font-size: 12px; color: #9CA3AF; }
+  .msg-text { font-size: 13px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-unread { width: 8px; height: 8px; background: #1E8449; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+  /* REVENUE CHART */
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 1rem 0; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar { width: 100%; background: linear-gradient(to top, #1E8449, #27AE60); border-radius: 6px 6px 0 0; transition: all 0.3s; cursor: pointer; position: relative; }
+  .chart-bar:hover { background: linear-gradient(to top, #D5A55A, #E8C07D); }
+  .chart-bar-label { font-size: 11px; color: #9CA3AF; }
+  .chart-bar-val { font-size: 11px; font-weight: 700; color: #1E8449; }
+
+  /* QUICK ACTIONS */
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.25rem 1.5rem; }
+  .quick-btn { border-radius: 10px; padding: 0.875rem 1rem; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+  .quick-btn:hover { transform: translateY(-1px); }
+  .quick-btn-green { background: #E9F7EF; color: #1E8449; }
+  .quick-btn-gold { background: #FEF3C7; color: #92400E; }
+  .quick-btn-purple { background: #EDE9FE; color: #5B21B6; }
+  .quick-btn-red { background: #FEE2E2; color: #DC2626; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: #1A2E1A; color: #fff; border-radius: 12px; padding: 1rem 1.5rem; font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 10px; z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .toast.show { display: flex; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  @media (max-width: 1024px) {
+    .three-col { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div>
+      <a href="/" style="text-decoration:none"><div class="logo">Chantier<span>Zen</span></div></a>
+    </div>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">👑</div>
+    <div>
+      <div class="user-name">Vous</div>
+      <div class="user-role">Administrateur</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Vue générale</div>
+    <div class="nav-item active"><span class="icon">📊</span> Tableau de bord</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">📈</span> Statistiques</div>
+
+    <div class="nav-section-title">Gestion</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">🤝</span> Demandes chantier <span class="nav-badge">5</span></div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">💬</span> Messages <span class="nav-badge">8</span></div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">🏆</span> Badges Expert <span class="nav-badge gold">3</span></div>
+
+    <div class="nav-section-title">Utilisateurs</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">🔨</span> Artisans <span class="nav-badge green">2</span></div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">👥</span> Particuliers</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">⭐</span> Avis à valider <span class="nav-badge">4</span></div>
+
+    <div class="nav-section-title">Finance</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">💰</span> Revenus</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">💳</span> Abonnements</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">📄</span> Factures</div>
+
+    <div class="nav-section-title">Système</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">⚙️</span> Paramètres</div>
+    <div class="nav-item" onclick="showToast('Page en cours de développement')"><span class="icon">🔔</span> Notifications</div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-logout">🌐 Voir le site public</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">Bonjour 👋 — Voici ce qui se passe aujourd'hui</div>
+    <div class="topbar-right">
+      <button class="topbar-btn">🔔<span class="notif-dot"></span></button>
+      <button class="btn-voir-site">🌐 Voir le site</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ALERT -->
+    <div class="alert-banner">
+      <div class="alert-text">🏆 3 demandes de badge Expert Validé en attente · 2 nouveaux artisans à valider · 5 demandes de chantier non traitées</div>
+      <button class="btn-alert" onclick="showToast('Redirection vers les tâches urgentes...')">Traiter maintenant →</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#E9F7EF">👥</div>
+          <span class="stat-trend trend-up">+24 ce mois</span>
+        </div>
+        <div class="stat-value">312</div>
+        <div class="stat-label">Particuliers inscrits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#EDE9FE">🔨</div>
+          <span class="stat-trend trend-up">+8 ce mois</span>
+        </div>
+        <div class="stat-value">87</div>
+        <div class="stat-label">Artisans inscrits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#FEF3C7">🤝</div>
+          <span class="stat-trend trend-up">+3 cette semaine</span>
+        </div>
+        <div class="stat-value">18</div>
+        <div class="stat-label">Chantiers en cours</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#E9F7EF">💰</div>
+          <span class="stat-trend trend-up">+18%</span>
+        </div>
+        <div class="stat-value">4.280€</div>
+        <div class="stat-label">Revenus ce mois</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#FEE2E2">⭐</div>
+          <span class="stat-trend trend-up">+6</span>
+        </div>
+        <div class="stat-value">284</div>
+        <div class="stat-label">Avis publiés</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#FEF3C7">🏆</div>
+          <span class="stat-trend trend-up">+2</span>
+        </div>
+        <div class="stat-value">23</div>
+        <div class="stat-label">Badges Expert accordés</div>
+      </div>
+    </div>
+
+    <!-- DEMANDES CHANTIER + MESSAGES -->
+    <div class="two-col">
+
+      <!-- DEMANDES CHANTIER -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🤝 Demandes de gestion chantier</div>
+          <span class="panel-link">Voir tout →</span>
+        </div>
+        <div class="panel-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Travaux</th>
+                <th>Budget</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="client-info">
+                    <div class="client-avatar">👩</div>
+                    <div>
+                      <div class="client-name">Sophie M.</div>
+                      <div class="client-ville">📍 Mons</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Salle de bain</td>
+                <td>5-15k€</td>
+                <td><span class="status-pill status-new">🆕 Nouveau</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-sm-primary" onclick="showToast('Appel planifié avec Sophie M. ✅')">📞 Appeler</button>
+                    <button class="btn-sm btn-sm-outline" onclick="showToast('Fiche client ouverte')">👁️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="client-info">
+                    <div class="client-avatar">👨</div>
+                    <div>
+                      <div class="client-name">Marc D.</div>
+                      <div class="client-ville">📍 Liège</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Rénovation complète</td>
+                <td>+50k€</td>
+                <td><span class="status-pill status-progress">🔄 En cours</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-sm-primary" onclick="showToast('Suivi chantier Marc D. ouvert')">📋 Suivi</button>
+                    <button class="btn-sm btn-sm-outline" onclick="showToast('Fiche client ouverte')">👁️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="client-info">
+                    <div class="client-avatar">👩</div>
+                    <div>
+                      <div class="client-name">Isabelle T.</div>
+                      <div class="client-ville">📍 Namur</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Cuisine</td>
+                <td>5-15k€</td>
+                <td><span class="status-pill status-new">🆕 Nouveau</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-sm-primary" onclick="showToast('Appel planifié avec Isabelle T. ✅')">📞 Appeler</button>
+                    <button class="btn-sm btn-sm-outline" onclick="showToast('Fiche client ouverte')">👁️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="client-info">
+                    <div class="client-avatar">👨</div>
+                    <div>
+                      <div class="client-name">Pierre V.</div>
+                      <div class="client-ville">📍 Bruxelles</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Toiture</td>
+                <td>15-50k€</td>
+                <td><span class="status-pill status-done">✅ Terminé</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-sm-gold" onclick="showToast('Facture envoyée à Pierre V.')">💰 Facturer</button>
+                    <button class="btn-sm btn-sm-outline" onclick="showToast('Fiche client ouverte')">👁️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="client-info">
+                    <div class="client-avatar">👩</div>
+                    <div>
+                      <div class="client-name">Anne-Marie L.</div>
+                      <div class="client-ville">📍 Charleroi</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Électricité</td>
+                <td>-5k€</td>
+                <td><span class="status-pill status-pending">⏳ En attente</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-sm-primary" onclick="showToast('Appel planifié ✅')">📞 Appeler</button>
+                    <button class="btn-sm btn-sm-outline" onclick="showToast('Fiche client ouverte')">👁️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- MESSAGES RECENTS -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">💬 Messages récents</div>
+            <span class="panel-link">Voir tout →</span>
+          </div>
+          <div class="panel-body" style="padding-bottom:0.5rem;">
+            <div class="msg-item">
+              <div class="msg-avatar">👩</div>
+              <div class="msg-content">
+                <div class="msg-header"><span class="msg-name">Sophie M.</span><span class="msg-time">Il y a 1h</span></div>
+                <div class="msg-text">Bonjour, est-ce que vous pouvez me rappeler ?</div>
+              </div>
+              <div class="msg-unread"></div>
+            </div>
+            <div class="msg-item">
+              <div class="msg-avatar">🔨</div>
+              <div class="msg-content">
+                <div class="msg-header"><span class="msg-name">Électro L. (artisan)</span><span class="msg-time">Il y a 3h</span></div>
+                <div class="msg-text">Le devis pour Marc D. est prêt, je vous l'envoie.</div>
+              </div>
+              <div class="msg-unread"></div>
+            </div>
+            <div class="msg-item">
+              <div class="msg-avatar">👨</div>
+              <div class="msg-content">
+                <div class="msg-header"><span class="msg-name">Marc D.</span><span class="msg-time">Hier</span></div>
+                <div class="msg-text">Super, on confirme le début des travaux lundi !</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIONS RAPIDES -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">⚡ Actions rapides</div>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-btn quick-btn-green" onclick="showToast('Nouvel artisan ajouté manuellement')">🔨 Ajouter artisan</button>
+            <button class="quick-btn quick-btn-gold" onclick="showToast('Planification visite badge ouverte')">🏆 Planifier visite</button>
+            <button class="quick-btn quick-btn-purple" onclick="showToast('Avis en attente de validation')">⭐ Valider avis</button>
+            <button class="quick-btn quick-btn-red" onclick="showToast('Rapport mensuel généré')">📊 Rapport mensuel</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- THREE COL -->
+    <div class="three-col">
+
+      <!-- ARTISANS EN ATTENTE -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🔨 Artisans à valider</div>
+          <span class="panel-link">Voir tout →</span>
+        </div>
+        <div class="panel-body" style="padding-bottom:0.5rem;">
+          <div class="artisan-pending">
+            <div class="artisan-pending-avatar">⚡</div>
+            <div>
+              <div class="artisan-pending-name">Voltex SPRL</div>
+              <div class="artisan-pending-meta">Électricité · Liège · Inscrit hier</div>
+            </div>
+            <div class="artisan-pending-actions">
+              <button class="btn-sm btn-sm-primary" onclick="showToast('Voltex SPRL validé ✅')">✅</button>
+              <button class="btn-sm btn-sm-red" onclick="showToast('Voltex SPRL refusé')">❌</button>
+            </div>
+          </div>
+          <div class="artisan-pending">
+            <div class="artisan-pending-avatar">🖌️</div>
+            <div>
+              <div class="artisan-pending-name">Peintures Noel</div>
+              <div class="artisan-pending-meta">Peinture · Namur · Inscrit il y a 2j</div>
+            </div>
+            <div class="artisan-pending-actions">
+              <button class="btn-sm btn-sm-primary" onclick="showToast('Peintures Noel validé ✅')">✅</button>
+              <button class="btn-sm btn-sm-red" onclick="showToast('Peintures Noel refusé')">❌</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BADGES EN ATTENTE -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🏆 Badges à planifier</div>
+          <span class="panel-link">Voir tout →</span>
+        </div>
+        <div class="panel-body" style="padding-bottom:0.5rem;">
+          <div class="badge-request">
+            <div class="badge-request-avatar">🪟</div>
+            <div>
+              <div class="badge-request-name">Jean-Pierre D.</div>
+              <div class="badge-request-meta">Carrelage · Mons · 149€ payé</div>
+            </div>
+            <div class="badge-request-actions">
+              <button class="btn-sm btn-sm-gold" onclick="showToast('Visite planifiée avec Jean-Pierre D. 📅')">📅 Planifier</button>
+            </div>
+          </div>
+          <div class="badge-request">
+            <div class="badge-request-avatar">⚡</div>
+            <div>
+              <div class="badge-request-name">Électro L.</div>
+              <div class="badge-request-meta">Électricité · Frameries · 149€ payé</div>
+            </div>
+            <div class="badge-request-actions">
+              <button class="btn-sm btn-sm-gold" onclick="showToast('Visite planifiée avec Électro L. 📅')">📅 Planifier</button>
+            </div>
+          </div>
+          <div class="badge-request">
+            <div class="badge-request-avatar">🏠</div>
+            <div>
+              <div class="badge-request-name">Couvertures R.</div>
+              <div class="badge-request-meta">Toiture · Charleroi · 149€ payé</div>
+            </div>
+            <div class="badge-request-actions">
+              <button class="btn-sm btn-sm-gold" onclick="showToast('Visite planifiée avec Couvertures R. 📅')">📅 Planifier</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVENUS DU MOIS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">💰 Revenus par source</div>
+          <span style="font-size:13px;font-weight:800;color:#1E8449">4.280€ ce mois</span>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:0.75rem;padding:1rem 0;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span>🤝 Gestion chantier</span><strong>2.400€</strong></div>
+              <div style="background:#F3F4F6;border-radius:4px;height:8px;overflow:hidden;"><div style="background:#1E8449;height:100%;width:56%;border-radius:4px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span>💳 Abonnements artisans</span><strong>1.160€</strong></div>
+              <div style="background:#F3F4F6;border-radius:4px;height:8px;overflow:hidden;"><div style="background:#27AE60;height:100%;width:27%;border-radius:4px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span>🏆 Badges Expert</span><strong>447€</strong></div>
+              <div style="background:#F3F4F6;border-radius:4px;height:8px;overflow:hidden;"><div style="background:#D5A55A;height:100%;width:10%;border-radius:4px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span>⭐ Certifications</span><strong>273€</strong></div>
+              <div style="background:#F3F4F6;border-radius:4px;height:8px;overflow:hidden;"><div style="background:#EDE9FE;height:100%;width:7%;border-radius:4px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ <span id="toast-msg"></span></div>
+
+<script>
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+
+</body>
+</html>

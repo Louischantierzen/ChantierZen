@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/connexion", "dest": "/connexion.html" },
+    { "src": "/recherche", "dest": "/recherche.html" },
+    { "src": "/profil", "dest": "/profil.html" },
+    { "src": "/gestion", "dest": "/gestion.html" },
+    { "src": "/dashboard", "dest": "/dashboard.html" },
+    { "src": "/messagerie", "dest": "/messagerie.html" },
+    { "src": "/admin", "dest": "/admin.html" }
+  ]
+}

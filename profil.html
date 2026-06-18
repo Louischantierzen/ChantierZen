@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChantierZen — Jean-Pierre Dubois · Carreleur</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F3F4F6; color: #1A2E1A; }
+
+  /* NAV */
+  nav {
+    background: #fff;
+    border-bottom: 2px solid #E5E0D8;
+    padding: 0 3rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .logo { font-size: 24px; font-weight: 800; color: #1E8449; letter-spacing: -0.5px; cursor: pointer; }
+  .logo span { color: #D5A55A; }
+  .nav-links { display: flex; gap: 0.5rem; list-style: none; justify-content: center; }
+  .nav-links a { color: #4B5563; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; padding: 7px 14px; border-radius: 8px; transition: all 0.2s; }
+  .nav-links a:hover { color: #1E8449; background: #E9F7EF; }
+  .nav-btns { display: flex; gap: 0.75rem; align-items: center; }
+  .btn-outline { background: transparent; color: #1E8449; border: 2px solid #1E8449; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: #1E8449; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* LANG */
+  .lang-selector { position: relative; }
+  .lang-btn { background: linear-gradient(135deg, #E9F7EF, #fff); border: 1.5px solid #1E8449; border-radius: 20px; padding: 7px 14px; font-size: 14px; font-weight: 700; cursor: pointer; color: #1E8449; display: flex; align-items: center; gap: 6px; }
+  .lang-btn img { width: 20px; height: 14px; border-radius: 3px; }
+  .lang-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1.5px solid #E5E0D8; border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.12); min-width: 180px; z-index: 200; padding: 6px; }
+  .lang-dropdown.open { display: block; }
+  .lang-option { padding: 9px 12px; font-size: 14px; cursor: pointer; color: #1A2E1A; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .lang-option img { width: 22px; height: 15px; border-radius: 3px; }
+  .lang-option:hover { background: #E9F7EF; color: #1E8449; }
+  .lang-option.active { background: #E9F7EF; color: #1E8449; font-weight: 700; }
+
+  /* BREADCRUMB */
+  .breadcrumb { padding: 1rem 2rem; font-size: 13px; color: #6B7280; max-width: 1100px; margin: 0 auto; }
+  .breadcrumb a { color: #1E8449; cursor: pointer; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* LAYOUT */
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; max-width: 1100px; margin: 0 auto; padding: 0 2rem 3rem; }
+
+  /* PROFILE HEADER */
+  .profile-header {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #E5E0D8;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 90px;
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+  }
+  .profile-header-content { position: relative; }
+  .profile-avatar-row { display: flex; align-items: flex-end; gap: 1.25rem; margin-bottom: 1.25rem; }
+  .profile-avatar {
+    width: 90px; height: 90px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #1A2E1A, #2D5016);
+    border: 4px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    margin-top: 30px;
+  }
+  .profile-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 50px; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; border-radius: 20px; padding: 5px 12px; }
+  .badge-expert { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; border: 1px solid #F59E0B; box-shadow: 0 2px 6px rgba(245,158,11,0.25); }
+  .badge-verifie { background: #E9F7EF; color: #1E8449; border: 1px solid #6EE7A0; }
+  .badge-individuel { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+  .profile-name { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .profile-meta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+  .profile-metier { background: #E9F7EF; color: #1E8449; font-size: 13px; font-weight: 700; border-radius: 20px; padding: 4px 12px; }
+  .profile-location { font-size: 14px; color: #6B7280; display: flex; align-items: center; gap: 4px; }
+  .profile-dispo { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .dispo-dot { width: 9px; height: 9px; border-radius: 50%; background: #27AE60; }
+
+  /* DUAL RATING */
+  .dual-rating { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; padding: 1rem 1.25rem; background: #FDFAF6; border-radius: 12px; border: 1px solid #E5E0D8; }
+  .rating-block { display: flex; flex-direction: column; gap: 3px; }
+  .rating-block-label { font-size: 11px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rating-block-value { display: flex; align-items: center; gap: 6px; }
+  .stars-lg { color: #D5A55A; font-size: 16px; }
+  .rating-num-lg { font-size: 22px; font-weight: 800; }
+  .rating-count-sm { font-size: 13px; color: #6B7280; }
+  .rating-divider { width: 1px; background: #E5E0D8; align-self: stretch; }
+
+  /* PROFILE TABS */
+  .profile-tabs { display: flex; gap: 0.25rem; border-bottom: 2px solid #F3F4F6; margin-bottom: 1.5rem; }
+  .ptab { padding: 0.75rem 1.25rem; font-size: 14px; font-weight: 600; color: #6B7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .ptab:hover { color: #1E8449; }
+  .ptab.active { color: #1E8449; border-bottom-color: #1E8449; }
+
+  /* TAB CONTENT */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ABOUT */
+  .about-text { font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 1.5rem; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .skill-tag { background: #F3F4F6; border-radius: 10px; padding: 0.6rem 1rem; font-size: 13px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 6px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .info-item { background: #FDFAF6; border-radius: 10px; padding: 0.75rem 1rem; border: 1px solid #E5E0D8; }
+  .info-item-label { font-size: 11px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .info-item-value { font-size: 14px; font-weight: 600; color: #1A2E1A; }
+
+  /* PHOTOS TAB */
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .photo-item { aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.2s; }
+  .photo-item:hover { transform: scale(1.02); }
+  .photo-item .photo-bg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+  .photo-item .photo-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: #fff; padding: 1rem 0.75rem 0.5rem; font-size: 12px; font-weight: 600; }
+  .photo-large { grid-column: span 2; aspect-ratio: 2/1; }
+
+  /* AVIS TAB */
+  .avis-summary { display: flex; gap: 2rem; align-items: center; background: #FDFAF6; border-radius: 12px; padding: 1.25rem; border: 1px solid #E5E0D8; margin-bottom: 1.5rem; }
+  .avis-big-num { font-size: 48px; font-weight: 800; color: #1A2E1A; line-height: 1; }
+  .avis-stars-big { color: #D5A55A; font-size: 22px; margin-bottom: 4px; }
+  .avis-total { font-size: 13px; color: #6B7280; }
+  .avis-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .avis-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .avis-bar-label { width: 14px; text-align: right; color: #6B7280; }
+  .avis-bar-track { flex: 1; height: 6px; background: #E5E0D8; border-radius: 3px; overflow: hidden; }
+  .avis-bar-fill { height: 100%; background: #D5A55A; border-radius: 3px; }
+  .avis-bar-count { width: 20px; color: #6B7280; }
+  .avis-source-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .source-tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid #E5E0D8; background: #fff; color: #6B7280; transition: all 0.2s; }
+  .source-tab.active { background: #1E8449; color: #fff; border-color: #1E8449; }
+  .avis-list { display: flex; flex-direction: column; gap: 1.25rem; }
+  .avis-card { background: #fff; border-radius: 14px; border: 1px solid #E5E0D8; padding: 1.25rem; }
+  .avis-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+  .avis-card-left { display: flex; gap: 0.75rem; align-items: center; }
+  .avis-card-avatar { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #E9F7EF, #D5F5E3); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .avis-card-name { font-size: 14px; font-weight: 700; }
+  .avis-card-date { font-size: 12px; color: #9CA3AF; }
+  .avis-card-stars { color: #D5A55A; font-size: 15px; }
+  .avis-card-text { font-size: 14px; color: #374151; line-height: 1.6; margin-bottom: 0.75rem; }
+  .avis-card-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .avis-card-tag { background: #F3F4F6; color: #6B7280; font-size: 12px; border-radius: 6px; padding: 3px 8px; }
+  .avis-verified { font-size: 12px; color: #1E8449; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .expert-eval { background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 1px solid #F59E0B; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .expert-eval-title { font-size: 15px; font-weight: 800; color: #92400E; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+  .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .criteria-item { background: rgba(255,255,255,0.6); border-radius: 8px; padding: 0.6rem 0.75rem; }
+  .criteria-label { font-size: 12px; color: #92400E; margin-bottom: 3px; }
+  .criteria-stars { color: #D5A55A; font-size: 14px; }
+
+  /* SIDEBAR STICKY */
+  .profile-sidebar { position: sticky; top: 90px; height: fit-content; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* CONTACT CARD */
+  .contact-card { background: #fff; border-radius: 16px; border: 1px solid #E5E0D8; padding: 1.5rem; }
+  .contact-card-title { font-size: 16px; font-weight: 800; margin-bottom: 1rem; }
+  .btn-contact-big { width: 100%; background: #1E8449; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 0.75rem; transition: all 0.2s; }
+  .btn-contact-big:hover { background: #27AE60; transform: translateY(-1px); }
+  .btn-gestion { width: 100%; background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; border: 1px solid #F59E0B; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 1rem; transition: all 0.2s; }
+  .btn-gestion:hover { transform: translateY(-1px); }
+  .contact-info { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.75rem; border-top: 1px solid #F3F4F6; }
+  .contact-info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B7280; }
+  .contact-info-row strong { color: #1A2E1A; }
+  .price-info { background: #FDFAF6; border-radius: 10px; padding: 0.75rem; text-align: center; border: 1px solid #E5E0D8; margin-bottom: 0.75rem; }
+  .price-info-label { font-size: 12px; color: #9CA3AF; margin-bottom: 3px; }
+  .price-info-value { font-size: 20px; font-weight: 800; color: #1E8449; }
+
+  /* ZONES CARD */
+  .zones-card { background: #fff; border-radius: 16px; border: 1px solid #E5E0D8; padding: 1.5rem; }
+  .zones-title { font-size: 14px; font-weight: 800; margin-bottom: 0.75rem; }
+  .zone-tag { display: inline-block; background: #E9F7EF; color: #1E8449; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 4px 10px; margin: 3px; }
+
+  /* SIMILAR */
+  .similar-card { background: #fff; border-radius: 16px; border: 1px solid #E5E0D8; padding: 1.5rem; }
+  .similar-title { font-size: 14px; font-weight: 800; margin-bottom: 1rem; }
+  .similar-item { display: flex; gap: 0.75rem; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid #F3F4F6; cursor: pointer; }
+  .similar-item:last-child { border-bottom: none; }
+  .similar-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .similar-name { font-size: 14px; font-weight: 700; }
+  .similar-meta { font-size: 12px; color: #6B7280; }
+  .similar-rating { margin-left: auto; font-size: 13px; font-weight: 700; color: #D5A55A; white-space: nowrap; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: #1A2E1A; color: #fff; border-radius: 12px; padding: 1rem 1.5rem; font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 10px; z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .toast.show { display: flex; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .profile-sidebar { position: static; }
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .info-grid { grid-template-columns: 1fr; }
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" style="text-decoration:none"><div class="logo">Chantier<span>Zen</span></div></a>
+  <ul class="nav-links">
+    <li><a href="/recherche">Artisans</a></li>
+    <li><a href="/gestion">Gestion de chantier</a></li>
+    <li><a href="/#how-section">Comment ça marche</a></li>
+  </ul>
+  <div class="nav-btns">
+    <div class="lang-selector">
+      <button class="lang-btn" onclick="toggleLang()">
+        <img src="https://flagcdn.com/w20/be.png" alt="FR" id="current-flag">
+        <span id="current-lang">FR</span> ▾
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option active" onclick="setLang('FR','be')"><img src="https://flagcdn.com/w20/be.png" alt="FR"> Français <span style="margin-left:auto">✓</span></div>
+        <div class="lang-option" onclick="setLang('NL','nl')"><img src="https://flagcdn.com/w20/nl.png" alt="NL"> Nederlands</div>
+        <div class="lang-option" onclick="setLang('DE','de')"><img src="https://flagcdn.com/w20/de.png" alt="DE"> Deutsch</div>
+        <div class="lang-option" onclick="setLang('EN','gb')"><img src="https://flagcdn.com/w20/gb.png" alt="EN"> English</div>
+      </div>
+    </div>
+    <button class="btn-outline" id="nav-login-btn" onclick="showLoginPrompt()">Connexion</button>
+    <button style="display:none;background:#EF4444;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600;cursor:pointer;" id="nav-logout-btn" onclick="toggleLogin()">Se déconnecter</button>
+    <button class="btn-primary" onclick="showLoginPrompt()">Inscription</button>
+  </div>
+</nav>
+
+<!-- LOGIN PROMPT -->
+<div id="login-prompt" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLoginPrompt()">
+  <div style="background:#fff;border-radius:20px;padding:2.5rem;max-width:420px;width:90%;text-align:center;">
+    <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:0.5rem;">Connectez-vous gratuitement</div>
+    <div style="font-size:14px;color:#6B7280;margin-bottom:1.5rem;line-height:1.6;">Pour voir le nom complet et contacter cet artisan via notre messagerie sécurisée.</div>
+    <div style="background:#E9F7EF;border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left;">
+      <div style="font-size:13px;color:#1A2E1A;display:flex;flex-direction:column;gap:6px;">
+        <div>✅ Nom complet débloqué</div>
+        <div>✅ Messagerie sécurisée incluse</div>
+        <div>✅ Avis détaillés accessibles</div>
+        <div>✅ 100% gratuit pour les particuliers</div>
+      </div>
+    </div>
+    <button onclick="loginFromPrompt()" style="width:100%;background:#1E8449;color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:0.75rem;">Créer mon compte gratuit →</button>
+    <button onclick="loginFromPrompt()" style="width:100%;background:transparent;color:#1E8449;border:2px solid #1E8449;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:1rem;">J'ai déjà un compte — Me connecter</button>
+    <div style="font-size:12px;color:#9CA3AF;cursor:pointer;" onclick="closeLoginPrompt()">Continuer sans compte</div>
+  </div>
+</div>
+
+<style>
+  #login-prompt.open { display: flex !important; }
+</style>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a>Accueil</a> · <a>Carrelage</a> · <a>Mons</a> · Jean-Pierre Dubois
+</div>
+
+<div class="layout">
+  <main>
+
+    <!-- PROFILE HEADER -->
+    <div class="profile-header">
+      <div class="profile-header-content">
+        <div class="profile-avatar-row">
+          <div class="profile-avatar">🪟</div>
+          <div class="profile-badges">
+            <span class="badge badge-expert">🏆 Expert Validé</span>
+            <span class="badge badge-verifie">✅ Vérifié</span>
+            <span class="badge badge-individuel">👤 Artisan individuel</span>
+          </div>
+        </div>
+        <div class="profile-name" id="artisan-full-name">Jean-Pierre D. <span id="name-lock" style="font-size:16px;color:#9CA3AF;" title="Connectez-vous pour voir le nom complet">🔒</span></div>
+        <div class="profile-meta">
+          <span class="profile-metier">🪟 Carrelage</span>
+          <span class="profile-location">📍 Mons, Hainaut</span>
+          <span class="profile-dispo"><div class="dispo-dot"></div> Disponible immédiatement</span>
+          <span style="font-size:13px;color:#6B7280">🇫🇷 🇳🇱</span>
+        </div>
+
+        <!-- DUAL RATING -->
+        <div class="dual-rating">
+          <div class="rating-block">
+            <div class="rating-block-label">✅ Note ChantierZen</div>
+            <div class="rating-block-value">
+              <span class="stars-lg">★★★★★</span>
+              <span class="rating-num-lg">4.9</span>
+              <span class="rating-count-sm">(47 avis clients)</span>
+            </div>
+          </div>
+          <div class="rating-divider"></div>
+          <div class="rating-block">
+            <div class="rating-block-label">🔍 Note Google</div>
+            <div class="rating-block-value">
+              <span class="stars-lg" style="font-size:14px">★★★★★</span>
+              <span class="rating-num-lg" style="font-size:18px">4.7</span>
+              <span class="rating-count-sm">(23 avis Google)</span>
+            </div>
+          </div>
+          <div class="rating-divider"></div>
+          <div class="rating-block">
+            <div class="rating-block-label">🏆 Évaluation Expert</div>
+            <div class="rating-block-value">
+              <span class="stars-lg">★★★★★</span>
+              <span style="font-size:13px;color:#92400E;font-weight:700">Validé le 12/03/2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="profile-tabs">
+          <div class="ptab active" onclick="showTab('about')">À propos</div>
+          <div class="ptab" onclick="showTab('photos')">📸 Réalisations (6)</div>
+          <div class="ptab" onclick="showTab('avis')">⭐ Avis (47)</div>
+        </div>
+
+        <!-- TAB: ABOUT -->
+        <div class="tab-content active" id="tab-about">
+          <p class="about-text">Carreleur indépendant avec plus de 15 ans d'expérience dans la pose de carrelage haut de gamme. Je travaille principalement sur des projets de rénovation de salles de bain, cuisines et espaces extérieurs. Mon objectif est simple : un travail soigné, des délais respectés et un client satisfait.</p>
+          <p class="about-text">Je me déplace sur Mons et ses environs, ainsi que dans tout le Hainaut. Devis gratuit sous 48h.</p>
+
+          <div style="font-size:14px;font-weight:800;margin-bottom:0.75rem;">🔧 Spécialités</div>
+          <div class="skills-grid">
+            <div class="skill-tag">🏠 Grands formats</div>
+            <div class="skill-tag">🛁 Salle de bain</div>
+            <div class="skill-tag">🍳 Cuisine</div>
+            <div class="skill-tag">🌿 Terrasse</div>
+            <div class="skill-tag">🔲 Mosaïque</div>
+            <div class="skill-tag">✨ Rénovation</div>
+          </div>
+
+          <div style="font-size:14px;font-weight:800;margin-bottom:0.75rem;">ℹ️ Informations</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-item-label">Expérience</div>
+              <div class="info-item-value">15 ans</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Statut</div>
+              <div class="info-item-value">Indépendant</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Délai devis</div>
+              <div class="info-item-value">Sous 48h</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Langues</div>
+              <div class="info-item-value">🇫🇷 Français · 🇳🇱 Néerlandais</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Assurance RC</div>
+              <div class="info-item-value">✅ Oui</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Numéro TVA</div>
+              <div class="info-item-value">✅ Vérifié</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: PHOTOS -->
+        <div class="tab-content" id="tab-photos">
+          <div class="photos-grid">
+            <div class="photo-item photo-large">
+              <div class="photo-bg" style="background:linear-gradient(135deg,#E9F7EF,#A9DFBF)">🪟</div>
+              <div class="photo-caption">Salle de bain complète — Mons 2026</div>
+            </div>
+            <div class="photo-item">
+              <div class="photo-bg" style="background:linear-gradient(135deg,#FEF9E7,#FDEBD0)">✨</div>
+              <div class="photo-caption">Cuisine — Jemappes</div>
+            </div>
+            <div class="photo-item">
+              <div class="photo-bg" style="background:linear-gradient(135deg,#EBF5FB,#D6EAF8)">🌿</div>
+              <div class="photo-caption">Terrasse extérieure</div>
+            </div>
+            <div class="photo-item">
+              <div class="photo-bg" style="background:linear-gradient(135deg,#F9EBEA,#FADBD8)">🔲</div>
+              <div class="photo-caption">Mosaïque salle de bain</div>
+            </div>
+            <div class="photo-item photo-large">
+              <div class="photo-bg" style="background:linear-gradient(135deg,#EDE9FE,#D8B4FE)">🏠</div>
+              <div class="photo-caption">Rénovation complète — La Louvière 2025</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: AVIS -->
+        <div class="tab-content" id="tab-avis">
+
+          <!-- EXPERT EVALUATION -->
+          <div class="expert-eval">
+            <div class="expert-eval-title">🏆 Évaluation Expert ChantierZen — 12 mars 2026</div>
+            <div class="criteria-grid">
+              <div class="criteria-item">
+                <div class="criteria-label">Qualité des finitions</div>
+                <div class="criteria-stars">★★★★★</div>
+              </div>
+              <div class="criteria-item">
+                <div class="criteria-label">Précision et alignement</div>
+                <div class="criteria-stars">★★★★★</div>
+              </div>
+              <div class="criteria-item">
+                <div class="criteria-label">Jointures et fugues</div>
+                <div class="criteria-stars">★★★★★</div>
+              </div>
+              <div class="criteria-item">
+                <div class="criteria-label">Propreté du chantier</div>
+                <div class="criteria-stars">★★★★☆</div>
+              </div>
+              <div class="criteria-item">
+                <div class="criteria-label">Respect des délais</div>
+                <div class="criteria-stars">★★★★★</div>
+              </div>
+              <div class="criteria-item">
+                <div class="criteria-label">Qualité des matériaux</div>
+                <div class="criteria-stars">★★★★★</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RATING SUMMARY -->
+          <div class="avis-summary">
+            <div style="text-align:center">
+              <div class="avis-big-num">4.9</div>
+              <div class="avis-stars-big">★★★★★</div>
+              <div class="avis-total">47 avis clients</div>
+            </div>
+            <div class="avis-bars">
+              <div class="avis-bar-row"><span class="avis-bar-label">5</span><div class="avis-bar-track"><div class="avis-bar-fill" style="width:85%"></div></div><span class="avis-bar-count">40</span></div>
+              <div class="avis-bar-row"><span class="avis-bar-label">4</span><div class="avis-bar-track"><div class="avis-bar-fill" style="width:12%"></div></div><span class="avis-bar-count">6</span></div>
+              <div class="avis-bar-row"><span class="avis-bar-label">3</span><div class="avis-bar-track"><div class="avis-bar-fill" style="width:2%"></div></div><span class="avis-bar-count">1</span></div>
+              <div class="avis-bar-row"><span class="avis-bar-label">2</span><div class="avis-bar-track"><div class="avis-bar-fill" style="width:0%"></div></div><span class="avis-bar-count">0</span></div>
+              <div class="avis-bar-row"><span class="avis-bar-label">1</span><div class="avis-bar-track"><div class="avis-bar-fill" style="width:0%"></div></div><span class="avis-bar-count">0</span></div>
+            </div>
+          </div>
+
+          <!-- SOURCE TABS -->
+          <div class="avis-source-tabs">
+            <div class="source-tab active">✅ ChantierZen (47)</div>
+            <div class="source-tab">🔍 Google (23)</div>
+          </div>
+
+          <!-- AVIS LIST -->
+          <div class="avis-list">
+            <div class="avis-card">
+              <div class="avis-card-header">
+                <div class="avis-card-left">
+                  <div class="avis-card-avatar">👩</div>
+                  <div>
+                    <div class="avis-card-name">Sophie M.</div>
+                    <div class="avis-card-date">Il y a 3 jours · Mons</div>
+                  </div>
+                </div>
+                <div style="text-align:right">
+                  <div class="avis-card-stars">★★★★★</div>
+                  <div class="avis-verified">✅ Client vérifié</div>
+                </div>
+              </div>
+              <p class="avis-card-text">"Travail absolument impeccable. Jean-Pierre a posé le carrelage de notre salle de bain complète en 3 jours comme prévu. Les joints sont parfaits, les finitions soignées. Je recommande les yeux fermés !"</p>
+              <div class="avis-card-tags">
+                <span class="avis-card-tag">Salle de bain</span>
+                <span class="avis-card-tag">Délais respectés</span>
+                <span class="avis-card-tag">Très soigné</span>
+              </div>
+            </div>
+
+            <div class="avis-card">
+              <div class="avis-card-header">
+                <div class="avis-card-left">
+                  <div class="avis-card-avatar">👨</div>
+                  <div>
+                    <div class="avis-card-name">Marc D.</div>
+                    <div class="avis-card-date">Il y a 1 semaine · Jemappes</div>
+                  </div>
+                </div>
+                <div style="text-align:right">
+                  <div class="avis-card-stars">★★★★★</div>
+                  <div class="avis-verified">✅ Client vérifié</div>
+                </div>
+              </div>
+              <p class="avis-card-text">"Ponctuel, propre, professionnel. Ma terrasse est magnifique. Le prix était juste et bien expliqué dès le devis. Aucune mauvaise surprise."</p>
+              <div class="avis-card-tags">
+                <span class="avis-card-tag">Terrasse</span>
+                <span class="avis-card-tag">Prix transparent</span>
+              </div>
+            </div>
+
+            <div class="avis-card">
+              <div class="avis-card-header">
+                <div class="avis-card-left">
+                  <div class="avis-card-avatar">👩</div>
+                  <div>
+                    <div class="avis-card-name">Isabelle T.</div>
+                    <div class="avis-card-date">Il y a 2 semaines · La Louvière</div>
+                  </div>
+                </div>
+                <div style="text-align:right">
+                  <div class="avis-card-stars">★★★★☆</div>
+                  <div class="avis-verified">✅ Client vérifié</div>
+                </div>
+              </div>
+              <p class="avis-card-text">"Très bon travail sur notre cuisine. Un petit retard d'un jour mais Jean-Pierre a prévenu à l'avance. Résultat final superbe, on est ravis."</p>
+              <div class="avis-card-tags">
+                <span class="avis-card-tag">Cuisine</span>
+                <span class="avis-card-tag">Bonne communication</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="profile-sidebar">
+
+    <!-- CONTACT CARD -->
+    <div class="contact-card">
+      <div class="contact-card-title">Contacter Jean-Pierre</div>
+      <div class="price-info">
+        <div class="price-info-label">Tarif horaire à partir de</div>
+        <div class="price-info-value">35€/h</div>
+      </div>
+      <button class="btn-contact-big" onclick="isLoggedIn ? showToast('Messagerie bientôt disponible ! 💬') : showLoginPrompt()">💬 Envoyer un message</button>
+      <button class="btn-gestion" onclick="window.location.href="/gestion"
+      <div class="contact-info">
+        <div class="contact-info-row">📍 <span><strong>Mons</strong> · Hainaut</span></div>
+        <div class="contact-info-row">⏱️ <span>Répond en <strong>moins de 2h</strong></span></div>
+        <div class="contact-info-row">📋 <span>Devis gratuit sous <strong>48h</strong></span></div>
+        <div class="contact-info-row">🟢 <span><strong>Disponible immédiatement</strong></span></div>
+      </div>
+    </div>
+
+    <!-- ZONES -->
+    <div class="zones-card">
+      <div class="zones-title">📍 Zones d'intervention</div>
+      <span class="zone-tag">Mons</span>
+      <span class="zone-tag">Jemappes</span>
+      <span class="zone-tag">La Louvière</span>
+      <span class="zone-tag">Charleroi</span>
+      <span class="zone-tag">Binche</span>
+      <span class="zone-tag">Tout le Hainaut</span>
+    </div>
+
+    <!-- ARTISANS SIMILAIRES -->
+    <div class="similar-card">
+      <div class="similar-title">🔍 Carreleurs similaires</div>
+      <div class="similar-item">
+        <div class="similar-avatar" style="background:linear-gradient(135deg,#E9F7EF,#A9DFBF)">🪟</div>
+        <div>
+          <div class="similar-name">Carrelages Petit</div>
+          <div class="similar-meta">📍 8 km · Frameries</div>
+        </div>
+        <div class="similar-rating">★ 4.7</div>
+      </div>
+      <div class="similar-item">
+        <div class="similar-avatar" style="background:linear-gradient(135deg,#EDE9FE,#C4B5FD)">🪟</div>
+        <div>
+          <div class="similar-name">Pro Carrelage SPRL</div>
+          <div class="similar-meta">📍 15 km · Binche</div>
+        </div>
+        <div class="similar-rating">★ 4.5</div>
+      </div>
+      <div class="similar-item">
+        <div class="similar-avatar" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)">🪟</div>
+        <div>
+          <div class="similar-name">Sols & Murs Renard</div>
+          <div class="similar-meta">📍 22 km · Charleroi</div>
+        </div>
+        <div class="similar-rating">★ 4.8</div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ <span id="toast-msg"></span></div>
+
+<script>
+  let isLoggedIn = false;
+
+  function updateProfileState() {
+    const nameEl = document.getElementById('artisan-full-name');
+    const lockEl = document.getElementById('name-lock');
+    if (isLoggedIn) {
+      nameEl.textContent = 'Jean-Pierre Dubois';
+      if (lockEl) lockEl.style.display = 'none';
+      document.getElementById('nav-login-btn').style.display = 'none';
+      document.getElementById('nav-logout-btn').style.display = 'block';
+    } else {
+      nameEl.textContent = 'Jean-Pierre D.';
+      if (lockEl) lockEl.style.display = 'inline';
+      document.getElementById('nav-login-btn').style.display = 'block';
+      document.getElementById('nav-logout-btn').style.display = 'none';
+    }
+  }
+
+  function toggleLogin() {
+    isLoggedIn = !isLoggedIn;
+    updateProfileState();
+  }
+
+  function showLoginPrompt() {
+    document.getElementById('login-prompt').classList.add('open');
+  }
+  function closeLoginPrompt() {
+    document.getElementById('login-prompt').classList.remove('open');
+  }
+  function loginFromPrompt() {
+    isLoggedIn = true;
+    closeLoginPrompt();
+    updateProfileState();
+    showToast('✅ Connecté ! Nom complet et contact débloqués.');
+  }
+
+  updateProfileState();
+
+  function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function toggleLang() {
+    document.getElementById('lang-dropdown').classList.toggle('open');
+  }
+  function setLang(code, country) {
+    document.getElementById('current-flag').src = 'https://flagcdn.com/w20/' + country + '.png';
+    document.getElementById('current-lang').textContent = code;
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('lang-dropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.lang-selector')) {
+      document.getElementById('lang-dropdown').classList.remove('open');
+    }
+  });
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
