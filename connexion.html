@@ -293,7 +293,7 @@
         <label>Adresse email</label>
         <div class="input-icon">
           <span class="icon">📧</span>
-          <input type="email" placeholder="votre@email.com">
+          <input type="email" id="login-email" placeholder="votre@email.com">
         </div>
       </div>
 
@@ -301,13 +301,13 @@
         <label>Mot de passe</label>
         <div class="input-icon">
           <span class="icon">🔒</span>
-          <input type="password" placeholder="Votre mot de passe">
+          <input type="password" id="login-pwd" placeholder="Votre mot de passe">
         </div>
       </div>
 
       <div class="forgot"><a>Mot de passe oublié ?</a></div>
 
-      <button class="btn-submit">Se connecter</button>
+      <button class="btn-submit" onclick="submitLogin()">Se connecter</button>
 
       <div class="divider"><span>ou continuer avec</span></div>
 
@@ -341,11 +341,11 @@
       <div class="form-row">
         <div class="form-group" style="margin-bottom:0">
           <label>Prénom</label>
-          <input type="text" placeholder="Jean">
+          <input type="text" id="reg-prenom" placeholder="Jean">
         </div>
         <div class="form-group" style="margin-bottom:0">
           <label>Nom</label>
-          <input type="text" placeholder="Dupont">
+          <input type="text" id="reg-nom" placeholder="Dupont">
         </div>
       </div>
 
@@ -353,7 +353,7 @@
         <label>Adresse email</label>
         <div class="input-icon">
           <span class="icon">📧</span>
-          <input type="email" placeholder="votre@email.com">
+          <input type="email" id="reg-email" placeholder="votre@email.com">
         </div>
       </div>
 
@@ -361,7 +361,7 @@
         <label>Téléphone</label>
         <div class="input-icon">
           <span class="icon">📱</span>
-          <input type="tel" placeholder="+32 470 00 00 00">
+          <input type="tel" id="reg-tel" placeholder="+32 470 00 00 00">
         </div>
       </div>
 
@@ -369,11 +369,11 @@
       <div id="artisan-fields" style="display:none;">
         <div class="form-group">
           <label>Nom de l'entreprise</label>
-          <input type="text" placeholder="Mon Entreprise SPRL">
+          <input type="text" id="reg-entreprise" placeholder="Mon Entreprise SPRL">
         </div>
         <div class="form-group">
           <label>Corps de métier</label>
-          <select>
+          <select id="reg-metier">
             <option value="">Sélectionnez votre métier</option>
             <option>Électricité</option>
             <option>Plomberie</option>
@@ -477,6 +477,127 @@
   }
 
   // Vérification en temps réel
+  // SUPABASE CONFIG
+  const SUPABASE_URL = 'https://chzffktwscvwpewbswhr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_XMNY_eg_3lIjdQSGUoy3zQ_vk2t50gW';
+
+  async function submitRegister() {
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('password-confirm').value;
+    const email = document.getElementById('reg-email').value;
+    const prenom = document.getElementById('reg-prenom').value;
+    const nom = document.getElementById('reg-nom').value;
+    const tel = document.getElementById('reg-tel').value;
+    const type = document.querySelector('.type-card.selected')?.id === 'type-artisan' ? 'artisan' : 'particulier';
+
+    if (!email || !pwd || !prenom || !nom) {
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    if (pwd !== confirm) {
+      document.getElementById('pwd-error').style.display = 'block';
+      return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    btn.textContent = 'Création en cours...';
+    btn.disabled = true;
+
+    try {
+      // 1. Créer le compte dans Supabase Auth
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify({ email, password: pwd })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        alert('Erreur : ' + data.error.message);
+        btn.textContent = 'Créer mon compte gratuitement';
+        btn.disabled = false;
+        return;
+      }
+
+      // 2. Sauvegarder le profil
+      const userId = data.user?.id;
+      if (userId) {
+        const table = type === 'artisan' ? 'artisans' : 'particuliers';
+        const metier = document.getElementById('reg-metier')?.value || '';
+        const entreprise = document.getElementById('reg-entreprise')?.value || '';
+
+        await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${data.access_token}`
+          },
+          body: JSON.stringify({
+            id: userId, prenom, nom, email, telephone: tel,
+            entreprise, metier
+          })
+        });
+      }
+
+      // 3. Succès !
+      document.getElementById('success-msg').style.display = 'block';
+      document.getElementById('success-msg').textContent = '✅ Compte créé ! Vérifiez votre email pour confirmer votre inscription.';
+      document.getElementById('success-msg').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+      alert('Une erreur est survenue. Veuillez réessayer.');
+      btn.textContent = 'Créer mon compte gratuitement';
+      btn.disabled = false;
+    }
+  }
+
+  async function submitLogin() {
+    const email = document.getElementById('login-email').value;
+    const pwd = document.getElementById('login-pwd').value;
+
+    if (!email || !pwd) {
+      alert('Veuillez remplir tous les champs.');
+      return;
+    }
+
+    const btn = document.querySelector('#login-form .btn-submit');
+    btn.textContent = 'Connexion...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify({ email, password: pwd })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        alert('Email ou mot de passe incorrect.');
+        btn.textContent = 'Se connecter';
+        btn.disabled = false;
+        return;
+      }
+
+      // Stocker le token et rediriger
+      localStorage.setItem('chantierzen_token', data.access_token);
+      localStorage.setItem('chantierzen_user', JSON.stringify(data.user));
+      window.location.href = '/';
+
+    } catch (err) {
+      alert('Une erreur est survenue.');
+      btn.textContent = 'Se connecter';
+      btn.disabled = false;
+    }
+  }
+
   document.addEventListener('input', function(e) {
     if (e.target.id === 'password' || e.target.id === 'password-confirm') {
       const pwd = document.getElementById('password').value;
@@ -489,29 +610,15 @@
     }
   });
 
-  function submitRegister() {
-    const pwd = document.getElementById('password').value;
-    const confirm = document.getElementById('password-confirm').value;
-    if (pwd !== confirm) {
-      document.getElementById('pwd-error').style.display = 'block';
-      document.getElementById('pwd-ok').style.display = 'none';
-      return;
-    }
-    document.getElementById('success-msg').style.display = 'block';
-    document.getElementById('success-msg').scrollIntoView({ behavior: 'smooth' });
-  }
-
   function toggleLang() {
     document.getElementById('lang-dropdown').classList.toggle('open');
   }
-
   function setLang(code, flag) {
     document.querySelector('.lang-btn').textContent = flag + ' ' + code + ' ▾';
     document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('lang-dropdown').classList.remove('open');
   }
-
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.lang-selector')) {
       document.getElementById('lang-dropdown').classList.remove('open');
