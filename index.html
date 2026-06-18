@@ -4,10 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChantierZen — Vos travaux entre de bonnes mains</title>
+
+<!-- Google Translate -->
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'fr',
+      includedLanguages: 'fr,nl,de,en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { overflow-x: hidden; max-width: 100%; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #FDFAF6; color: #1A2E1A; }
+  /* Cache le widget Google Translate par défaut */
+  #google_translate_element { display: none; }
+  .goog-te-banner-frame { display: none !important; }
+  body { top: 0 !important; }
+  .skiptranslate { display: none !important; }
+
+  /* Style de notre sélecteur custom */
+  .lang-selector { position: relative; }
+  .lang-btn {
+    background: linear-gradient(135deg, #E9F7EF, #fff);
+    border: 1.5px solid #1E8449;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #1E8449;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(30,132,73,0.12);
+  }
+  .lang-btn img { width: 20px; height: 14px; border-radius: 3px; }
+  .lang-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border: 1.5px solid #E5E0D8;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    min-width: 180px;
+    z-index: 200;
+    padding: 6px;
+  }
+  .lang-dropdown.open { display: block; animation: fadeIn 0.15s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .lang-option {
+    padding: 9px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #1A2E1A;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .lang-option img { width: 22px; height: 15px; border-radius: 3px; }
+  .lang-option:hover { background: #E9F7EF; color: #1E8449; }
+  .lang-option.active { background: #E9F7EF; color: #1E8449; font-weight: 700; }
 
   /* NAV */
   nav {
@@ -563,13 +626,11 @@
 </footer>
 
 <script>
+  // Element caché pour Google Translate
+  document.write('<div id="google_translate_element"></div>');
+
   function goToSearch(metier) {
     window.location.href = '/recherche?metier=' + encodeURIComponent(metier);
-  }
-
-  function toggleMetier(el) {
-    document.querySelectorAll('.metier-tag').forEach(t => t.classList.remove('active'));
-    el.classList.toggle('active');
   }
 
   function toggleLang() {
@@ -577,6 +638,7 @@
   }
 
   function setLang(code, country, name) {
+    // Met à jour le bouton visuel
     document.getElementById('current-flag').src = 'https://flagcdn.com/w20/' + country + '.png';
     document.getElementById('current-lang').textContent = code;
     document.querySelectorAll('.lang-check').forEach(c => c.style.display = 'none');
@@ -584,11 +646,23 @@
     document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
     event.currentTarget.classList.add('active');
     document.getElementById('lang-dropdown').classList.remove('open');
+
+    // Déclenche Google Translate
+    const langMap = { 'FR': 'fr', 'NL': 'nl', 'DE': 'de', 'EN': 'en' };
+    const googleLang = langMap[code];
+    setTimeout(() => {
+      const select = document.querySelector('.goog-te-combo');
+      if (select) {
+        select.value = googleLang;
+        select.dispatchEvent(new Event('change'));
+      }
+    }, 500);
   }
 
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.lang-selector')) {
-      document.getElementById('lang-dropdown').classList.remove('open');
+      const dd = document.getElementById('lang-dropdown');
+      if (dd) dd.classList.remove('open');
     }
   });
 </script>
