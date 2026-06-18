@@ -418,8 +418,8 @@
   <h1>Vos travaux entre<br>de bonnes mains</h1>
   <p>Des artisans évalués par des connaisseurs du métier. Un service de gestion complète pour ceux qui veulent confier leur chantier à un pro.</p>
   <div class="hero-btns">
-    <button class="btn-white">Trouver un artisan</button>
-    <button class="btn-hero-outline">Confier mon chantier</button>
+    <button class="btn-white" onclick="window.location.href='/recherche'">Trouver un artisan</button>
+    <button class="btn-hero-outline" onclick="window.location.href='/gestion'">Confier mon chantier</button>
   </div>
   <div class="search-bar">
     <select>
@@ -436,22 +436,22 @@
       <option>Jardinage</option>
     </select>
     <input type="text" placeholder="Ville ou province...">
-    <button class="btn-primary">Rechercher</button>
+    <button class="btn-primary" onclick="goToSearch(document.querySelector('.search-bar select').value)">Rechercher</button>
   </div>
 </section>
 
 <!-- METIER TAGS -->
 <div class="metier-tags">
-  <span class="metier-tag" onclick="toggleMetier(this)">Électricité</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Plomberie</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Peinture</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Toiture</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Carrelage</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Menuiserie</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Maçonnerie</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Isolation</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Chauffage</span>
-  <span class="metier-tag" onclick="toggleMetier(this)">Jardinage</span>
+  <span class="metier-tag" onclick="goToSearch('Électricité')">⚡ Électricité</span>
+  <span class="metier-tag" onclick="goToSearch('Plomberie')">🔧 Plomberie</span>
+  <span class="metier-tag" onclick="goToSearch('Peinture')">🖌️ Peinture</span>
+  <span class="metier-tag" onclick="goToSearch('Toiture')">🏠 Toiture</span>
+  <span class="metier-tag" onclick="goToSearch('Carrelage')">🪟 Carrelage</span>
+  <span class="metier-tag" onclick="goToSearch('Menuiserie')">🪚 Menuiserie</span>
+  <span class="metier-tag" onclick="goToSearch('Maçonnerie')">🧱 Maçonnerie</span>
+  <span class="metier-tag" onclick="goToSearch('Isolation')">🌡️ Isolation</span>
+  <span class="metier-tag" onclick="goToSearch('Chauffage')">🔥 Chauffage</span>
+  <span class="metier-tag" onclick="goToSearch('Jardinage')">🌿 Jardinage</span>
 </div>
 
 <!-- SERVICES -->
@@ -563,6 +563,10 @@
 </footer>
 
 <script>
+  function goToSearch(metier) {
+    window.location.href = '/recherche?metier=' + encodeURIComponent(metier);
+  }
+
   function toggleMetier(el) {
     document.querySelectorAll('.metier-tag').forEach(t => t.classList.remove('active'));
     el.classList.toggle('active');
