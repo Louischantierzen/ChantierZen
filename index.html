@@ -236,6 +236,58 @@
   footer { background: #111; color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 14px; }
   .footer-logo { color: #27AE60; font-weight: 700; font-size: 18px; margin-bottom: 0.5rem; }
 
+  /* RESPONSIVE MOBILE */
+  @media (max-width: 768px) {
+    /* Nav mobile */
+    nav { padding: 0 1rem; grid-template-columns: auto auto; gap: 0.5rem; height: 60px; }
+    .nav-links { display: none; }
+    .nav-btns { gap: 0.5rem; }
+    .btn-outline { display: none; }
+    .btn-primary { padding: 7px 12px; font-size: 13px; }
+    .lang-btn { padding: 6px 10px; font-size: 13px; }
+
+    /* Hero mobile */
+    .hero { padding: 3rem 1.25rem 2rem; }
+    .hero h1 { font-size: 2rem; }
+    .hero p { font-size: 15px; }
+    .hero-btns { flex-direction: column; align-items: center; }
+    .btn-white, .btn-hero-outline { width: 100%; max-width: 280px; padding: 12px 20px; font-size: 15px; }
+
+    /* Search bar mobile */
+    .search-bar { padding: 1rem; margin: 1.5rem auto 0; flex-direction: column; }
+    .search-bar select, .search-bar input { width: 100%; min-width: unset; }
+    .search-bar button { width: 100%; padding: 12px; }
+    .search-divider { display: none; }
+
+    /* Metier tags */
+    .metier-tags { padding: 1rem; }
+    .metier-tag { font-size: 12px; padding: 5px 10px; margin: 3px; }
+
+    /* Sections */
+    .section { padding: 3rem 1.25rem; }
+    .section-white { padding: 3rem 1.25rem; }
+    .section-title { font-size: 1.6rem; }
+
+    /* Grids */
+    .services-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr 1fr; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Stats */
+    .stat-number { font-size: 32px; }
+
+    /* CTA */
+    .cta-banner { padding: 3rem 1.25rem; }
+    .cta-btns { flex-direction: column; align-items: center; }
+    .btn-gold, .btn-hero-outline { width: 100%; max-width: 280px; }
+  }
+
+  @media (max-width: 480px) {
+    .how-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+
   /* LANGUAGE SELECTOR */
   .lang-selector { position: relative; }
   .lang-btn {
