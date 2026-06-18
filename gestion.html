@@ -526,15 +526,49 @@
     scrollToForm();
   }
 
-  function submitForm() {
+  async function submitForm() {
     const prenom = document.getElementById('f-prenom').value;
+    const nom = document.getElementById('f-nom').value;
     const tel = document.getElementById('f-tel').value;
+    const email = document.getElementById('f-email').value;
+    const ville = document.getElementById('f-ville').value;
     const type = document.getElementById('f-type').value;
+    const desc = document.getElementById('f-desc').value;
+    const formule = document.getElementById('f-formule').value;
+    const budget = document.querySelector('.budget-option.selected')?.textContent || 'Non précisé';
+
     if (!prenom || !tel || !type) {
       alert('Veuillez remplir au minimum votre prénom, téléphone et type de travaux.');
       return;
     }
-    document.getElementById('success-overlay').classList.add('open');
+
+    const btn = document.querySelector('.btn-submit-form');
+    btn.textContent = 'Envoi en cours...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('https://formspree.io/f/xykaqzaz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prenom, nom, tel, email, ville,
+          type_travaux: type,
+          budget, description: desc, formule
+        })
+      });
+
+      if (response.ok) {
+        document.getElementById('success-overlay').classList.add('open');
+      } else {
+        alert('Une erreur est survenue. Veuillez réessayer.');
+        btn.textContent = 'Envoyer ma demande gratuitement →';
+        btn.disabled = false;
+      }
+    } catch (error) {
+      alert('Une erreur est survenue. Vérifiez votre connexion.');
+      btn.textContent = 'Envoyer ma demande gratuitement →';
+      btn.disabled = false;
+    }
   }
 
   function closeSuccess() {
