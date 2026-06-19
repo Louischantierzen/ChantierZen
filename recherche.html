@@ -728,6 +728,90 @@
     setTimeout(() => b.classList.remove('show'), 3000);
   }
 
+  const SUPABASE_URL = 'https://chzffktwscvwpewbswhr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_XMNY_eg_3lIjdQSGUoy3zQ_vk2t50gW';
+
+  // Charger les vrais artisans depuis Supabase
+  async function loadRealArtisans() {
+    try {
+      const metier = document.getElementById('metier-select').value;
+      const ville = document.getElementById('city-input').value;
+
+      let url = `${SUPABASE_URL}/rest/v1/artisans?select=*&order=created_at.desc`;
+      if (metier) url += `&metier=eq.${encodeURIComponent(metier)}`;
+      if (ville) url += `&ville=ilike.${encodeURIComponent('%'+ville+'%')}`;
+
+      const res = await fetch(url, {
+        headers: { 'apikey': SUPABASE_KEY }
+      });
+      const artisans = await res.json();
+
+      if (artisans && artisans.length > 0) {
+        // On a de vrais artisans — on les affiche
+        const list = document.getElementById('artisan-list');
+        
+        // Vider les faux artisans
+        list.innerHTML = '';
+
+        artisans.forEach(a => {
+          const card = document.createElement('div');
+          card.className = 'artisan-card';
+          card.dataset.metier = a.metier || '';
+          card.dataset.dist = '0';
+          card.dataset.rating = '0';
+
+          const initial = (a.prenom || a.entreprise || '?')[0].toUpperCase();
+          const nom = a.prenom ? `${a.prenom} ${a.nom || ''}`.trim() : (a.entreprise || 'Artisan');
+          const metierLabel = a.metier || 'Artisan';
+          const ville = a.ville || 'Belgique';
+          const desc = a.description || 'Profil en cours de complétion.';
+
+          card.innerHTML = `
+            <div class="artisan-avatar" style="background:linear-gradient(135deg,#1E8449,#27AE60);font-size:28px;font-weight:800;color:#fff;">
+              ${initial}
+            </div>
+            <div class="artisan-info">
+              <div class="artisan-name">${nom}</div>
+              <div class="artisan-meta">
+                <span class="artisan-metier">🔨 ${metierLabel}</span>
+                <span class="artisan-dist">📍 ${ville}</span>
+                <span class="badge badge-inscrit">🔵 Inscrit</span>
+              </div>
+              <div class="artisan-desc">${desc}</div>
+            </div>
+            <div class="artisan-actions">
+              <button class="btn-contact" onclick="window.location.href='/connexion'">💬 Contacter</button>
+            </div>
+          `;
+          list.appendChild(card);
+        });
+
+        document.getElementById('results-count').textContent = artisans.length;
+
+        // Ajouter les faux artisans en dessous avec un séparateur
+        const sep = document.createElement('div');
+        sep.style.cssText = 'text-align:center;padding:1rem;font-size:13px;color:#9CA3AF;border-top:1px solid #E5E0D8;margin-top:1rem;';
+        sep.textContent = '── Autres artisans de la région ──';
+        list.appendChild(sep);
+
+        // Remettre les faux artisans
+        addDemoArtisans(list);
+
+      } else {
+        // Pas encore de vrais artisans — garder les démos
+        document.getElementById('results-count').textContent = '6';
+      }
+    } catch(err) {
+      console.error('Erreur chargement artisans:', err);
+    }
+  }
+
+  function addDemoArtisans(list) {
+    // Les cartes démo restent visibles
+    const demoCards = document.querySelectorAll('.artisan-card[data-demo]');
+    demoCards.forEach(c => list.appendChild(c));
+  }
+
   function filterResults() {
     const metier = document.getElementById('metier-select').value;
     const cards = document.querySelectorAll('.artisan-card');
@@ -743,6 +827,7 @@
 
   // Init au chargement
   updateNames();
+  loadRealArtisans();
 
   function sortResults(by) {
     const list = document.getElementById('artisan-list');
