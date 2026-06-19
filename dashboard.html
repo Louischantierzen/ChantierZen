@@ -502,7 +502,7 @@
   // Vérifier connexion et charger profil
   async function initDashboard() {
     const token = localStorage.getItem('chantierzen_token');
-    const user = JSON.parse(localStorage.getItem('chantierzen_user') || 'null');
+    const userStr = localStorage.getItem('chantierzen_user'); const user = userStr ? JSON.parse(userStr) : null;
 
     if (!token || !user) {
       window.location.href = '/connexion';
@@ -556,7 +556,7 @@
   // Sauvegarder le profil
   async function saveProfil() {
     const token = localStorage.getItem('chantierzen_token');
-    const user = JSON.parse(localStorage.getItem('chantierzen_user') || 'null');
+    const userStr = localStorage.getItem('chantierzen_user'); const user = userStr ? JSON.parse(userStr) : null;
     if (!token || !user) return;
 
     const profil = {
