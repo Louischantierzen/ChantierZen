@@ -509,10 +509,7 @@
       return;
     }
 
-    // Afficher email en attendant les données
-    document.getElementById('user-name').textContent = user.email?.split('@')[0] || 'Mon compte';
-
-    // Charger le profil artisan depuis Supabase
+    // Vérifier si c'est bien un artisan
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/artisans?id=eq.${user.id}&select=*`, {
         headers: {
@@ -522,7 +519,12 @@
       });
       const data = await res.json();
 
-      if (data && data.length > 0) {
+      if (!data || data.length === 0) {
+        // C'est un particulier — rediriger vers accueil
+        showToast('⚠️ Cette page est réservée aux artisans.');
+        setTimeout(() => window.location.href = '/', 2000);
+        return;
+      }
         const profil = data[0];
         // Mettre à jour la sidebar
         if (profil.prenom) document.getElementById('user-name').textContent = profil.prenom + ' ' + (profil.nom || '');
