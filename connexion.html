@@ -230,8 +230,8 @@
         <div class="lang-option" onclick="setLang('EN', '🇬🇧')">🇬🇧 English</div>
       </div>
     </div>
-    <button class="btn-outline" href="/connexion">Connexion</button>
-    <button class="btn-primary" href="/connexion">Inscription gratuite</button>
+    <button class="btn-outline" onclick="showLogin()">Connexion</button>
+    <button class="btn-primary" onclick="showRegister()">Inscription gratuite</button>
   </div>
 </nav>
 
@@ -321,7 +321,7 @@
         Continuer avec Google
       </button>
 
-      <div class="switch-link">Pas encore de compte ? <a href="/connexion">Créer un compte gratuit</a></div>
+      <div class="switch-link">Pas encore de compte ? <a onclick="showRegister()">Créer un compte gratuit</a></div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -452,7 +452,7 @@
       </button>
 
       <div class="cgv">En créant un compte vous acceptez nos <a>Conditions d'utilisation</a> et notre <a>Politique de confidentialité</a></div>
-      <div class="switch-link">Déjà un compte ? <a href="/connexion">Se connecter</a></div>
+      <div class="switch-link">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></div>
     </div>
 
   </div>
