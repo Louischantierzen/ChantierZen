@@ -459,6 +459,42 @@
 </div>
 
 <script>
+  // Gestion cookies compatible tous navigateurs
+  function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/; SameSite=Lax';
+  }
+  function getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+      const parts = v.split('=');
+      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+    }, null);
+  }
+  function deleteCookie(name) {
+    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  }
+  function getToken() { 
+    try { return getCookie('cz_token') || localStorage.getItem('chantierzen_token'); } 
+    catch(e) { return getCookie('cz_token'); }
+  }
+  function getUser() {
+    try {
+      const u = getCookie('cz_user') || localStorage.getItem('chantierzen_user');
+      if (!u) return null;
+      return JSON.parse(u);
+    } catch(e) { return null; }
+  }
+  function setAuth(token, user) {
+    try { localStorage.setItem('chantierzen_token', token); localStorage.setItem('chantierzen_user', JSON.stringify(user)); } catch(e) {}
+    setCookie('cz_token', token, 7);
+    setCookie('cz_user', JSON.stringify(user), 7);
+  }
+  function clearAuth() {
+    try { localStorage.removeItem('chantierzen_token'); localStorage.removeItem('chantierzen_user'); } catch(e) {}
+    deleteCookie('cz_token');
+    deleteCookie('cz_user');
+  }
+
   function showLogin() {
     document.getElementById('login-form').style.display = 'block';
     document.getElementById('register-form').style.display = 'none';
@@ -549,8 +585,8 @@
       }
 
       // 3. Succès — rediriger artisan vers dashboard
-      localStorage.setItem('chantierzen_token', data.access_token);
-      localStorage.setItem('chantierzen_user', JSON.stringify(data.user));
+      
+      setAuth(data.access_token, data.user);
 
       if (type === 'artisan') {
         showToast('✅ Compte créé ! Complétez votre profil.');
@@ -601,8 +637,8 @@
       }
 
       // Stocker le token et rediriger selon le type
-      localStorage.setItem('chantierzen_token', data.access_token);
-      localStorage.setItem('chantierzen_user', JSON.stringify(data.user));
+      
+      setAuth(data.access_token, data.user);
 
       // Vérifier si c'est un artisan ou particulier
       const resCheck = await fetch(`${SUPABASE_URL}/rest/v1/artisans?id=eq.${data.user.id}&select=id`, {
