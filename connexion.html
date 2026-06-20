@@ -590,7 +590,7 @@
 
       if (type === 'artisan') {
         showToast('✅ Compte créé ! Complétez votre profil.');
-        setTimeout(() => window.location.href = '/dashboard', 1500);
+        setTimeout(() => window.location.href = '/dashboard.html', 1500);
       } else {
         document.getElementById('success-msg').style.display = 'block';
         document.getElementById('success-msg').textContent = '✅ Compte créé ! Bienvenue sur ChantierZen.';
@@ -647,7 +647,7 @@
       const artisanData = await resCheck.json();
 
       if (artisanData && artisanData.length > 0) {
-        window.location.href = '/dashboard'; // Artisan → tableau de bord
+        window.location.href = '/dashboard.html'; // Artisan → tableau de bord
       } else {
         window.location.href = '/'; // Particulier → accueil
       }
