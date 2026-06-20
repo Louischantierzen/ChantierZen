@@ -648,13 +648,7 @@
         if(username) {
           username.textContent = "👤 " + (nom.trim() || user.email?.split("@")[0] || "Mon compte");
           username.style.cursor = "pointer";
-          // Vérifier si artisan ou particulier pour rediriger vers le bon espace
-        fetch(SUPABASE_URL + "/rest/v1/artisans?id=eq." + user.id + "&select=id", {
-          headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + token }
-        }).then(r => r.json()).then(d => {
-          const dest = (d && d.length > 0) ? "/dashboard.html" : "/";
-          username.onclick = function() { window.location.href = dest; };
-        });
+          username.onclick = function() { window.location.href = "/dashboard.html"; };
           username.title = "Mon tableau de bord";
         }
       } catch(e) {
