@@ -207,18 +207,18 @@
 
   <nav class="sidebar-nav">
     <div class="nav-section-title">Principal</div>
-    <div class="nav-item active" onclick="setPage('dashboard')"><span class="icon">📊</span> Tableau de bord</div>
-    <div class="nav-item" onclick="setPage('messages')"><span class="icon">💬</span> Messages <span class="nav-badge">3</span></div>
-    <div class="nav-item" onclick="setPage('avis')"><span class="icon">⭐</span> Avis reçus <span class="nav-badge green">2</span></div>
+    <div class="nav-item active" onclick="setPage('dashboard', this)"><span class="icon">📊</span> Tableau de bord</div>
+    <div class="nav-item" onclick="setPage('messages', this)"><span class="icon">💬</span> Messages <span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="setPage('avis', this)"><span class="icon">⭐</span> Avis reçus <span class="nav-badge green">2</span></div>
 
     <div class="nav-section-title">Mon profil</div>
-    <div class="nav-item" onclick="setPage('photos')"><span class="icon">📸</span> Mes photos</div>
-    <div class="nav-item" onclick="setPage('profil')"><span class="icon">👤</span> Mon profil</div>
-    <div class="nav-item" onclick="setPage('badge')"><span class="icon">🏆</span> Badge Expert</div>
+    <div class="nav-item" onclick="setPage('photos', this)"><span class="icon">📸</span> Mes photos</div>
+    <div class="nav-item" onclick="setPage('profil', this)"><span class="icon">👤</span> Mon profil</div>
+    <div class="nav-item" onclick="setPage('badge', this)"><span class="icon">🏆</span> Badge Expert</div>
 
     <div class="nav-section-title">Compte</div>
-    <div class="nav-item" onclick="setPage('abonnement')"><span class="icon">💳</span> Abonnement</div>
-    <div class="nav-item" onclick="setPage('parametres')"><span class="icon">⚙️</span> Paramètres</div>
+    <div class="nav-item" onclick="setPage('abonnement', this)"><span class="icon">💳</span> Abonnement</div>
+    <div class="nav-item" onclick="setPage('parametres', this)"><span class="icon">⚙️</span> Paramètres</div>
   </nav>
 
   <div class="sidebar-footer">
@@ -651,16 +651,22 @@
     showToast('Demande envoyée ! Un expert vous contacte sous 48h 🏆');
   }
 
-  function setPage(page) {
+  function setPage(page, el) {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    if (event) event.currentTarget?.classList.add('active');
+    if (el) el.classList.add('active');
 
-    // Afficher le bon contenu
-    document.querySelector('.content').style.display = page === 'profil' ? 'none' : 'block';
-    document.getElementById('profil-edit-section').style.display = page === 'profil' ? 'block' : 'none';
+    const content = document.querySelector('.content');
+    const profilSection = document.getElementById('profil-edit-section');
 
-    if (page !== 'dashboard' && page !== 'profil') {
-      showToast('Page "' + page + '" bientôt disponible !');
+    if (page === 'profil') {
+      if(content) content.style.display = 'none';
+      if(profilSection) profilSection.style.display = 'block';
+    } else {
+      if(content) content.style.display = 'block';
+      if(profilSection) profilSection.style.display = 'none';
+      if (page !== 'dashboard') {
+        showToast('Page "' + page + '" bientôt disponible !');
+      }
     }
   }
 
