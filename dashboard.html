@@ -202,6 +202,45 @@
       }
     }
   }
+
+  async function saveProfil() {
+    const SUPABASE_URL = 'https://chzffktwscvwpewbswhr.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_XMNY_eg_3lIjdQSGUoy3zQ_vk2t50gW';
+    const token = document.cookie.split('; ').reduce((r,v) => { const p=v.split('='); return p[0]==='cz_token'?decodeURIComponent(p[1]):r; }, null) || localStorage.getItem('chantierzen_token');
+    const userStr = document.cookie.split('; ').reduce((r,v) => { const p=v.split('='); return p[0]==='cz_user'?decodeURIComponent(p[1]):r; }, null) || localStorage.getItem('chantierzen_user');
+    if (!token || !userStr) return;
+    const user = JSON.parse(userStr);
+
+    const profil = {
+      prenom: document.getElementById('edit-prenom')?.value || '',
+      nom: document.getElementById('edit-nom')?.value || '',
+      telephone: document.getElementById('edit-tel')?.value || '',
+      metier: document.getElementById('edit-metier')?.value || '',
+      ville: document.getElementById('edit-ville')?.value || '',
+      description: document.getElementById('edit-desc')?.value || ''
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/artisans?id=eq.${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profil)
+      });
+      if (res.ok) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+        if(toast && toastMsg) { toastMsg.textContent = '✅ Profil sauvegardé !'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+        const userName = document.getElementById('user-name');
+        if(userName) userName.textContent = profil.prenom + ' ' + profil.nom;
+      }
+    } catch(err) {
+      alert('Erreur lors de la sauvegarde');
+    }
+  }
 </script>
 </head>
 <body>
