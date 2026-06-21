@@ -600,7 +600,8 @@
       }
 
     } catch (err) {
-      alert('Une erreur est survenue. Veuillez réessayer.');
+      console.error('Erreur inscription:', err);
+      alert('Erreur : ' + (err.message || JSON.stringify(err)));
       btn.textContent = 'Créer mon compte gratuitement';
       btn.disabled = false;
     }
