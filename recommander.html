@@ -189,18 +189,18 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Prénom de l'artisan *</label>
-          <input type="text" id="r-prenom" placeholder="Jean">
+          <label>Prénom de l'artisan</label>
+          <input type="text" id="r-prenom" placeholder="Jean (optionnel)">
         </div>
         <div class="form-group">
-          <label>Nom *</label>
-          <input type="text" id="r-nom" placeholder="Dupont">
+          <label>Nom</label>
+          <input type="text" id="r-nom" placeholder="Dupont (optionnel)">
         </div>
       </div>
 
       <div class="form-group">
-        <label>Nom de l'entreprise (si applicable)</label>
-        <input type="text" id="r-entreprise" placeholder="Dupont SPRL">
+        <label>Nom de l'entreprise *</label>
+        <input type="text" id="r-entreprise" placeholder="Dupont SPRL ou nom de l'artisan">
       </div>
 
       <div class="form-row">
@@ -300,12 +300,15 @@
   async function soumettre() {
     const prenom = document.getElementById('r-prenom').value;
     const nom = document.getElementById('r-nom').value;
+    const entreprise = document.getElementById('r-entreprise').value;
     const metier = document.getElementById('r-metier').value;
     const ville = document.getElementById('r-ville').value;
     const commentaire = document.getElementById('r-commentaire').value;
 
-    if (!prenom || !nom || !metier || !ville || !note || !commentaire) {
-      alert('Veuillez remplir tous les champs obligatoires et donner une note.');
+    const nomArtisan = entreprise || (prenom + ' ' + nom).trim();
+
+    if (!nomArtisan || !metier || !ville || !note || !commentaire) {
+      alert('Veuillez remplir au minimum : nom/entreprise, métier, ville, note et commentaire.');
       return;
     }
 
@@ -331,8 +334,8 @@
         },
         body: JSON.stringify({
           particulier_id: user.id,
-          nom_artisan: prenom + ' ' + nom,
-          entreprise: document.getElementById('r-entreprise').value,
+          nom_artisan: nomArtisan,
+          entreprise: entreprise,
           metier, ville,
           telephone: document.getElementById('r-tel').value,
           note, commentaire
