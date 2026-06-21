@@ -563,25 +563,29 @@
         return;
       }
 
-      // 2. Sauvegarder le profil
+      // 2. Sauvegarder le profil (optionnel - on continue même si ça échoue)
       const userId = data.user?.id;
       if (userId) {
         const table = type === 'artisan' ? 'artisans' : 'particuliers';
         const metier = document.getElementById('reg-metier')?.value || '';
         const entreprise = document.getElementById('reg-entreprise')?.value || '';
 
-        await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${data.access_token}`
-          },
-          body: JSON.stringify({
-            id: userId, prenom, nom, email, telephone: tel,
-            entreprise, metier
-          })
-        });
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${data.access_token}`
+            },
+            body: JSON.stringify({
+              id: userId, prenom, nom, email, telephone: tel,
+              entreprise, metier
+            })
+          });
+        } catch(e) {
+          console.log('Profil sauvegarde ignorée:', e);
+        }
       }
 
       // 3. Succès — rediriger selon le type
@@ -591,8 +595,6 @@
         showToast('✅ Compte créé ! Complétez votre profil.');
         setTimeout(() => window.location.href = '/dashboard.html', 1500);
       } else {
-        // Particulier → page de recommandation
-        setAuth(data.access_token, data.user);
         showToast('✅ Compte créé ! Bienvenue sur ChantierZen 🎉');
         setTimeout(() => window.location.href = '/recommander.html', 1500);
       }
