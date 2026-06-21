@@ -183,6 +183,26 @@
   .toast.show { display: flex; animation: slideIn 0.3s ease; }
   @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
+<script>
+  function setPage(page, el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+    const content = document.querySelector('.content');
+    const profilSection = document.getElementById('profil-edit-section');
+    if (page === 'profil') {
+      if(content) content.style.display = 'none';
+      if(profilSection) profilSection.style.display = 'block';
+    } else {
+      if(content) content.style.display = 'block';
+      if(profilSection) profilSection.style.display = 'none';
+      if (page !== 'dashboard') {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+        if(toast && toastMsg) { toastMsg.textContent = 'Page "' + page + '" bientôt disponible !'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+      }
+    }
+  }
+</script>
 </head>
 <body>
 
@@ -509,7 +529,10 @@
   function deleteCookie(name) {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   }
-  function getToken() { return getCookie('cz_token') || getToken(); }
+  function getToken() { 
+    try { return getCookie('cz_token') || localStorage.getItem('chantierzen_token'); } 
+    catch(e) { return getCookie('cz_token'); }
+  }
   function getUser() {
     const u = getCookie('cz_user') || localStorage.getItem('chantierzen_user');
     if (!u) return null;
@@ -678,7 +701,9 @@
   }
 
   // Lancer au chargement
-  initDashboard();
+  window.addEventListener('DOMContentLoaded', function() {
+    initDashboard();
+  });  initDashboard();
 </script>
 
 </body>
