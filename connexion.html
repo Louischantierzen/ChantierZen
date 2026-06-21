@@ -584,18 +584,17 @@
         });
       }
 
-      // 3. Succès — rediriger artisan vers dashboard
-      
+      // 3. Succès — rediriger selon le type
       setAuth(data.access_token, data.user);
 
       if (type === 'artisan') {
         showToast('✅ Compte créé ! Complétez votre profil.');
         setTimeout(() => window.location.href = '/dashboard.html', 1500);
       } else {
-        document.getElementById('success-msg').style.display = 'block';
-        document.getElementById('success-msg').textContent = '✅ Compte créé ! Bienvenue sur ChantierZen.';
-        document.getElementById('success-msg').scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => window.location.href = '/', 2000);
+        // Particulier → page de recommandation
+        setAuth(data.access_token, data.user);
+        showToast('✅ Compte créé ! Bienvenue sur ChantierZen 🎉');
+        setTimeout(() => window.location.href = '/recommander.html', 1500);
       }
 
     } catch (err) {
